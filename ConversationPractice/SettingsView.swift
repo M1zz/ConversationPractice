@@ -86,6 +86,7 @@ struct SettingsView: View {
         case .spanish: return "Configuración"
         case .indonesian: return "Pengaturan"
         case .none: return "Settings"
+        default: return "Settings"
         }
     }
 
@@ -98,6 +99,7 @@ struct SettingsView: View {
         case .spanish: return "Idioma nativo"
         case .indonesian: return "Bahasa Ibu"
         case .none: return "Native Language"
+        default: return "Native Language"
         }
     }
 
@@ -110,6 +112,7 @@ struct SettingsView: View {
         case .spanish: return "Idioma de aprendizaje"
         case .indonesian: return "Bahasa Belajar"
         case .none: return "Learning Language"
+        default: return "Learning Language"
         }
     }
 
@@ -122,6 +125,7 @@ struct SettingsView: View {
         case .spanish: return "Restablecer configuración"
         case .indonesian: return "Reset Pengaturan"
         case .none: return "Reset Settings"
+        default: return "Reset Settings"
         }
     }
 
@@ -134,6 +138,7 @@ struct SettingsView: View {
         case .spanish: return "Listo"
         case .indonesian: return "Selesai"
         case .none: return "Done"
+        default: return "Done"
         }
     }
 }

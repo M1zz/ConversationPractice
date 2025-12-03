@@ -6,6 +6,7 @@ struct ContentView: View {
 
     @StateObject private var scenarioManager = CustomScenarioManager.shared
     @State private var showingScenarioCreation = false
+    @State private var showingScenarioImport = false
     @State private var showSettings = false
 
     private var localizedText: LocalizedText {
@@ -96,16 +97,28 @@ struct ContentView: View {
                 }
             }
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button(action: {
-                    showingScenarioCreation = true
-                }) {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.title3)
+                HStack(spacing: 16) {
+                    Button(action: {
+                        showingScenarioImport = true
+                    }) {
+                        Image(systemName: "square.and.arrow.down")
+                            .font(.title3)
+                    }
+
+                    Button(action: {
+                        showingScenarioCreation = true
+                    }) {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title3)
+                    }
                 }
             }
         }
         .sheet(isPresented: $showingScenarioCreation) {
             ScenarioCreationView(nativeLanguage: nativeLanguage, learningLanguage: learningLanguage)
+        }
+        .sheet(isPresented: $showingScenarioImport) {
+            ScenarioImportView(nativeLanguage: nativeLanguage, learningLanguage: learningLanguage)
         }
         .sheet(isPresented: $showSettings) {
             SettingsView()
@@ -120,6 +133,7 @@ struct ContentView: View {
         case .chinese: return "对话练习"
         case .spanish: return "Práctica de conversación"
         case .indonesian: return "Latihan Percakapan"
+        default: return "Conversation Practice"
         }
     }
 
@@ -131,6 +145,7 @@ struct ContentView: View {
         case .chinese: return "练习在真实情况下应对各种回答"
         case .spanish: return "Practica respondiendo a varias respuestas en situaciones reales"
         case .indonesian: return "Berlatih merespons berbagai jawaban dalam situasi nyata"
+        default: return "Practice responding to various answers in real situations"
         }
     }
 
@@ -142,6 +157,7 @@ struct ContentView: View {
         case .chinese: return "我的场景"
         case .spanish: return "Mis escenarios"
         case .indonesian: return "Skenario Saya"
+        default: return "My Scenarios"
         }
     }
 
@@ -153,6 +169,7 @@ struct ContentView: View {
         case .chinese: return "内置场景"
         case .spanish: return "Escenarios integrados"
         case .indonesian: return "Skenario Bawaan"
+        default: return "Built-in Scenarios"
         }
     }
 
@@ -164,6 +181,7 @@ struct ContentView: View {
         case .chinese: return "删除"
         case .spanish: return "Eliminar"
         case .indonesian: return "Hapus"
+        default: return "Delete"
         }
     }
 }

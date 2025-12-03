@@ -131,6 +131,7 @@ struct FreeConversationView: View {
         case .chinese: return "翻译"
         case .spanish: return "Traducción"
         case .indonesian: return "Terjemahan"
+        default: return "Translation"
         }
     }
 
@@ -142,6 +143,7 @@ struct FreeConversationView: View {
         case .chinese: return "关闭"
         case .spanish: return "Apagado"
         case .indonesian: return "Matikan"
+        default: return "Off"
         }
     }
 
@@ -212,6 +214,8 @@ struct FreeConversationView: View {
             return getSpanishResponses(nativeLanguage: nativeLanguage)
         case .indonesian:
             return getIndonesianResponses(nativeLanguage: nativeLanguage)
+        default:
+            return getEnglishResponses(nativeLanguage: nativeLanguage)
         }
     }
 
@@ -224,6 +228,7 @@ struct FreeConversationView: View {
             case .chinese: return ["我明白了。", "非常有趣！", "请继续。", "好的。", "能多解释一下吗？"]
             case .spanish: return ["Entiendo.", "¡Muy interesante!", "Por favor continúa.", "Bien.", "¿Puedes explicar más?"]
             case .indonesian: return ["Saya mengerti.", "Menarik sekali!", "Silakan lanjutkan.", "Baik.", "Bisa jelaskan lebih lanjut?"]
+            default: return ["I understand.", "Very interesting!", "Please continue.", "Good.", "Can you explain more?"]
             }
         }()
 

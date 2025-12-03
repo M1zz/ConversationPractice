@@ -316,7 +316,6 @@ struct ScenarioCreationView: View {
         case .chinese: return "基本信息"
         case .spanish: return "Información básica"
         case .indonesian: return "Informasi Dasar"
-        default: return "Basic Information"
         }
     }
 
@@ -328,7 +327,6 @@ struct ScenarioCreationView: View {
         case .chinese: return "图标"
         case .spanish: return "Icono"
         case .indonesian: return "Ikon"
-        default: return "Icon"
         }
     }
 
@@ -340,7 +338,6 @@ struct ScenarioCreationView: View {
         case .chinese: return "标题"
         case .spanish: return "Título"
         case .indonesian: return "Judul"
-        default: return "Title"
         }
     }
 
@@ -352,7 +349,6 @@ struct ScenarioCreationView: View {
         case .chinese: return "输入场景标题"
         case .spanish: return "Ingrese el título del escenario"
         case .indonesian: return "Masukkan judul skenario"
-        default: return "Enter scenario title"
         }
     }
 
@@ -364,7 +360,6 @@ struct ScenarioCreationView: View {
         case .chinese: return "描述"
         case .spanish: return "Descripción"
         case .indonesian: return "Deskripsi"
-        default: return "Description"
         }
     }
 
@@ -376,7 +371,6 @@ struct ScenarioCreationView: View {
         case .chinese: return "对话内容"
         case .spanish: return "Conversación"
         case .indonesian: return "Percakapan"
-        default: return "Conversation"
         }
     }
 
@@ -388,7 +382,6 @@ struct ScenarioCreationView: View {
         case .chinese: return "点击 + 添加对话"
         case .spanish: return "Toca + para agregar conversación"
         case .indonesian: return "Ketuk + untuk menambah percakapan"
-        default: return "Tap + to add conversation"
         }
     }
 
@@ -400,7 +393,6 @@ struct ScenarioCreationView: View {
         case .chinese: return "创建场景"
         case .spanish: return "Crear escenario"
         case .indonesian: return "Buat Skenario"
-        default: return "Create Scenario"
         }
     }
 
@@ -412,7 +404,6 @@ struct ScenarioCreationView: View {
         case .chinese: return "取消"
         case .spanish: return "Cancelar"
         case .indonesian: return "Batal"
-        default: return "Cancel"
         }
     }
 
@@ -424,7 +415,6 @@ struct ScenarioCreationView: View {
         case .chinese: return "保存"
         case .spanish: return "Guardar"
         case .indonesian: return "Simpan"
-        default: return "Save"
         }
     }
 
@@ -436,7 +426,6 @@ struct ScenarioCreationView: View {
         case .chinese: return "添加标题和描述"
         case .spanish: return "Agregar título y descripción"
         case .indonesian: return "Tambah judul dan deskripsi"
-        default: return "Add title and description"
         }
     }
 
@@ -448,7 +437,6 @@ struct ScenarioCreationView: View {
         case .chinese: return "添加对话"
         case .spanish: return "Agregar turno"
         case .indonesian: return "Tambah Giliran"
-        default: return "Add Turn"
         }
     }
 
@@ -460,7 +448,6 @@ struct ScenarioCreationView: View {
         case .chinese: return "添加第一轮对话"
         case .spanish: return "Agregar primer turno"
         case .indonesian: return "Tambah Giliran Pertama"
-        default: return "Add First Turn"
         }
     }
 
@@ -472,7 +459,6 @@ struct ScenarioCreationView: View {
         case .chinese: return "放弃更改"
         case .spanish: return "Descartar cambios"
         case .indonesian: return "Buang Perubahan"
-        default: return "Discard Changes"
         }
     }
 
@@ -484,7 +470,6 @@ struct ScenarioCreationView: View {
         case .chinese: return "您要放弃更改吗？"
         case .spanish: return "¿Quieres descartar tus cambios?"
         case .indonesian: return "Apakah Anda ingin membuang perubahan Anda?"
-        default: return "Do you want to discard your changes?"
         }
     }
 
@@ -496,7 +481,6 @@ struct ScenarioCreationView: View {
         case .chinese: return "放弃"
         case .spanish: return "Descartar"
         case .indonesian: return "Buang"
-        default: return "Discard"
         }
     }
 
@@ -508,7 +492,6 @@ struct ScenarioCreationView: View {
         case .chinese: return "继续编辑"
         case .spanish: return "Seguir editando"
         case .indonesian: return "Lanjutkan Mengedit"
-        default: return "Keep Editing"
         }
     }
 }
@@ -674,7 +657,6 @@ struct TurnRow: View {
         case .chinese: return turn.speaker == .user ? "我" : "对方"
         case .spanish: return turn.speaker == .user ? "Yo" : "Compañero"
         case .indonesian: return turn.speaker == .user ? "Saya" : "Lawan bicara"
-        default: return turn.speaker == .user ? "Me" : "Partner"
         }
     }
 
@@ -686,7 +668,6 @@ struct TurnRow: View {
         case .chinese: return "选项"
         case .spanish: return "opciones"
         case .indonesian: return "opsi"
-        default: return "options"
         }
     }
 
@@ -698,7 +679,6 @@ struct TurnRow: View {
         case .chinese: return "添加选项"
         case .spanish: return "Agregar opción"
         case .indonesian: return "Tambah Opsi"
-        default: return "Add Option"
         }
     }
 }
@@ -854,7 +834,6 @@ struct OptionCard: View {
         case .chinese: return "选项 \(optionIndex + 1)"
         case .spanish: return "Opción \(optionIndex + 1)"
         case .indonesian: return "Opsi \(optionIndex + 1)"
-        default: return "Option \(optionIndex + 1)"
         }
     }
 
@@ -866,7 +845,6 @@ struct OptionCard: View {
         case .chinese: return "中文"
         case .spanish: return "Español"
         case .indonesian: return "Bahasa Indonesia"
-        default: return "English"
         }
     }
 
@@ -878,7 +856,6 @@ struct OptionCard: View {
         case .chinese: return "中文"
         case .spanish: return "Español"
         case .indonesian: return "Bahasa Indonesia"
-        default: return "English"
         }
     }
 
@@ -890,7 +867,6 @@ struct OptionCard: View {
         case .chinese: return "输入内容"
         case .spanish: return "Ingrese texto"
         case .indonesian: return "Masukkan teks"
-        default: return "Enter text"
         }
     }
 
@@ -902,7 +878,6 @@ struct OptionCard: View {
         case .chinese: return "翻译将自动输入"
         case .spanish: return "La traducción aparecerá automáticamente"
         case .indonesian: return "Terjemahan akan muncul secara otomatis"
-        default: return "Translation will appear automatically"
         }
     }
 }

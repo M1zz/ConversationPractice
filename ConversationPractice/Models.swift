@@ -2,6 +2,7 @@ import Foundation
 
 // MARK: - 언어 모델 (모국어 & 학습 언어 공통)
 enum Language: String, CaseIterable, Identifiable, Codable {
+    // Original 6 languages with full UI translation
     case korean = "ko-KR"
     case english = "en-US"
     case japanese = "ja-JP"
@@ -9,7 +10,39 @@ enum Language: String, CaseIterable, Identifiable, Codable {
     case spanish = "es-ES"
     case indonesian = "id-ID"
 
+    // Additional languages supported by Translation framework
+    case arabic = "ar-SA"
+    case dutch = "nl-NL"
+    case french = "fr-FR"
+    case german = "de-DE"
+    case hindi = "hi-IN"
+    case italian = "it-IT"
+    case polish = "pl-PL"
+    case portuguese = "pt-BR"
+    case russian = "ru-RU"
+    case thai = "th-TH"
+    case turkish = "tr-TR"
+    case ukrainian = "uk-UA"
+    case vietnamese = "vi-VN"
+    case swedish = "sv-SE"
+    case danish = "da-DK"
+    case norwegian = "nb-NO"
+    case finnish = "fi-FI"
+    case czech = "cs-CZ"
+    case hebrew = "he-IL"
+    case romanian = "ro-RO"
+
     var id: String { rawValue }
+
+    // Only original 6 languages have complete UI translation
+    var hasFullUITranslation: Bool {
+        switch self {
+        case .korean, .english, .japanese, .chinese, .spanish, .indonesian:
+            return true
+        default:
+            return false
+        }
+    }
 
     var displayName: String {
         switch self {
@@ -19,6 +52,26 @@ enum Language: String, CaseIterable, Identifiable, Codable {
         case .chinese: return "中文"
         case .spanish: return "Español"
         case .indonesian: return "Bahasa Indonesia"
+        case .arabic: return "العربية"
+        case .dutch: return "Nederlands"
+        case .french: return "Français"
+        case .german: return "Deutsch"
+        case .hindi: return "हिन्दी"
+        case .italian: return "Italiano"
+        case .polish: return "Polski"
+        case .portuguese: return "Português"
+        case .russian: return "Русский"
+        case .thai: return "ไทย"
+        case .turkish: return "Türkçe"
+        case .ukrainian: return "Українська"
+        case .vietnamese: return "Tiếng Việt"
+        case .swedish: return "Svenska"
+        case .danish: return "Dansk"
+        case .norwegian: return "Norsk"
+        case .finnish: return "Suomi"
+        case .czech: return "Čeština"
+        case .hebrew: return "עברית"
+        case .romanian: return "Română"
         }
     }
 
@@ -30,6 +83,26 @@ enum Language: String, CaseIterable, Identifiable, Codable {
         case .chinese: return "🇨🇳"
         case .spanish: return "🇪🇸"
         case .indonesian: return "🇮🇩"
+        case .arabic: return "🇸🇦"
+        case .dutch: return "🇳🇱"
+        case .french: return "🇫🇷"
+        case .german: return "🇩🇪"
+        case .hindi: return "🇮🇳"
+        case .italian: return "🇮🇹"
+        case .polish: return "🇵🇱"
+        case .portuguese: return "🇧🇷"
+        case .russian: return "🇷🇺"
+        case .thai: return "🇹🇭"
+        case .turkish: return "🇹🇷"
+        case .ukrainian: return "🇺🇦"
+        case .vietnamese: return "🇻🇳"
+        case .swedish: return "🇸🇪"
+        case .danish: return "🇩🇰"
+        case .norwegian: return "🇳🇴"
+        case .finnish: return "🇫🇮"
+        case .czech: return "🇨🇿"
+        case .hebrew: return "🇮🇱"
+        case .romanian: return "🇷🇴"
         }
     }
 }
@@ -47,6 +120,7 @@ struct LocalizedText {
         case .chinese: return "选择母语"
         case .spanish: return "Selecciona tu idioma"
         case .indonesian: return "Pilih Bahasa Anda"
+        default: return "Select Your Language"
         }
     }
 
@@ -58,6 +132,7 @@ struct LocalizedText {
         case .chinese: return "您的母语是什么？"
         case .spanish: return "¿Cuál es tu idioma nativo?"
         case .indonesian: return "Apa bahasa ibu Anda?"
+        default: return "What is your native language?"
         }
     }
 
@@ -70,6 +145,7 @@ struct LocalizedText {
         case .chinese: return "选择学习语言"
         case .spanish: return "Selecciona idioma a aprender"
         case .indonesian: return "Pilih Bahasa untuk Dipelajari"
+        default: return "Select Language to Learn"
         }
     }
 
@@ -81,6 +157,7 @@ struct LocalizedText {
         case .chinese: return "您想学习什么语言？"
         case .spanish: return "¿Qué idioma quieres aprender?"
         case .indonesian: return "Bahasa apa yang ingin Anda pelajari?"
+        default: return "What language do you want to learn?"
         }
     }
 
@@ -93,6 +170,7 @@ struct LocalizedText {
         case .chinese: return "选择练习模式"
         case .spanish: return "Selecciona modo de práctica"
         case .indonesian: return "Pilih Mode Latihan"
+        default: return "Select Practice Mode"
         }
     }
 
@@ -104,6 +182,7 @@ struct LocalizedText {
         case .chinese: return "练习"
         case .spanish: return "Práctica"
         case .indonesian: return "Latihan"
+        default: return "Practice"
         }
     }
 
@@ -116,6 +195,7 @@ struct LocalizedText {
         case .chinese: return "自由对话"
         case .spanish: return "Conversación libre"
         case .indonesian: return "Percakapan Bebas"
+        default: return "Free Conversation"
         }
     }
 
@@ -127,6 +207,7 @@ struct LocalizedText {
         case .chinese: return "与AI自由对话练习"
         case .spanish: return "Practica conversando libremente con IA"
         case .indonesian: return "Berlatih dengan berbicara bebas dengan AI"
+        default: return "Practice by chatting freely with AI"
         }
     }
 
@@ -138,6 +219,7 @@ struct LocalizedText {
         case .chinese: return "情景练习"
         case .spanish: return "Práctica de escenarios"
         case .indonesian: return "Latihan Skenario"
+        default: return "Scenario Practice"
         }
     }
 
@@ -149,6 +231,7 @@ struct LocalizedText {
         case .chinese: return "实际情景对话练习"
         case .spanish: return "Practica conversaciones para situaciones reales"
         case .indonesian: return "Latihan percakapan untuk situasi nyata"
+        default: return "Practice conversations for real situations"
         }
     }
 
@@ -160,6 +243,7 @@ struct LocalizedText {
         case .chinese: return "发音练习"
         case .spanish: return "Práctica de pronunciación"
         case .indonesian: return "Latihan Pengucapan"
+        default: return "Pronunciation Practice"
         }
     }
 
@@ -171,6 +255,7 @@ struct LocalizedText {
         case .chinese: return "练习准确发音"
         case .spanish: return "Practica la pronunciación correcta"
         case .indonesian: return "Berlatih pengucapan yang akurat"
+        default: return "Practice accurate pronunciation"
         }
     }
 
@@ -182,6 +267,7 @@ struct LocalizedText {
         case .chinese: return "点击说话"
         case .spanish: return "Toca para hablar"
         case .indonesian: return "Ketuk untuk berbicara"
+        default: return "Tap to speak"
         }
     }
 
@@ -193,6 +279,7 @@ struct LocalizedText {
         case .chinese: return "正在说话..."
         case .spanish: return "Hablando..."
         case .indonesian: return "Berbicara..."
+        default: return "Speaking..."
         }
     }
 
@@ -204,6 +291,7 @@ struct LocalizedText {
         case .chinese: return "按下麦克风按钮\n开始对话"
         case .spanish: return "Presiona el botón del micrófono\npara iniciar la conversación"
         case .indonesian: return "Tekan tombol mikrofon\nuntuk memulai percakapan"
+        default: return "Press the microphone button\nto start conversation"
         }
     }
 
@@ -215,6 +303,7 @@ struct LocalizedText {
         case .chinese: return "我"
         case .spanish: return "Yo"
         case .indonesian: return "Saya"
+        default: return "Me"
         }
     }
 }
@@ -317,6 +406,11 @@ class ScenarioData {
             return chineseScenarios
         case .spanish:
             return spanishScenarios
+        // New languages - no pre-built scenarios yet, but users can create/import custom scenarios
+        case .arabic, .dutch, .french, .german, .hindi, .italian, .polish,
+             .portuguese, .russian, .thai, .turkish, .ukrainian, .vietnamese,
+             .swedish, .danish, .norwegian, .finnish, .czech, .hebrew, .romanian:
+            return []
         }
     }
 

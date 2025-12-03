@@ -267,6 +267,7 @@ struct PronunciationPracticeView: View {
         case .chinese: return "请跟着说这句话:"
         case .spanish: return "Intenta decir esta frase:"
         case .indonesian: return "Coba ucapkan kalimat ini:"
+        default: return "Try to say this phrase:"
         }
     }
 
@@ -278,6 +279,7 @@ struct PronunciationPracticeView: View {
         case .chinese: return "发音分数"
         case .spanish: return "Puntuación de pronunciación"
         case .indonesian: return "Skor Pengucapan"
+        default: return "Pronunciation Score"
         }
     }
 
@@ -289,6 +291,7 @@ struct PronunciationPracticeView: View {
         case .chinese: return "逐词分析"
         case .spanish: return "Análisis palabra por palabra"
         case .indonesian: return "Analisis Per Kata"
+        default: return "Word-by-Word Analysis"
         }
     }
 
@@ -300,6 +303,7 @@ struct PronunciationPracticeView: View {
         case .chinese: return "重试"
         case .spanish: return "Reintentar"
         case .indonesian: return "Coba Lagi"
+        default: return "Try Again"
         }
     }
 
@@ -311,6 +315,7 @@ struct PronunciationPracticeView: View {
         case .chinese: return "下一个"
         case .spanish: return "Siguiente"
         case .indonesian: return "Berikutnya"
+        default: return "Next"
         }
     }
 
@@ -322,6 +327,7 @@ struct PronunciationPracticeView: View {
         case .chinese: return "录音中..."
         case .spanish: return "Grabando..."
         case .indonesian: return "Merekam..."
+        default: return "Recording..."
         }
     }
 
@@ -333,6 +339,7 @@ struct PronunciationPracticeView: View {
         case .chinese: return "点击录音"
         case .spanish: return "Toca para grabar"
         case .indonesian: return "Ketuk untuk merekam"
+        default: return "Tap to record"
         }
     }
 
@@ -344,6 +351,7 @@ struct PronunciationPracticeView: View {
         case .chinese: return "翻译"
         case .spanish: return "Traducción"
         case .indonesian: return "Terjemahan"
+        default: return "Translation"
         }
     }
 
@@ -355,6 +363,7 @@ struct PronunciationPracticeView: View {
         case .chinese: return "关闭"
         case .spanish: return "Apagado"
         case .indonesian: return "Matikan"
+        default: return "Off"
         }
     }
 }
@@ -556,6 +565,8 @@ func getPracticePhrases(for language: Language, nativeLanguage: Language) -> [Pr
         return getChinesePhrases(nativeLanguage: nativeLanguage)
     case .spanish:
         return getSpanishPhrases(nativeLanguage: nativeLanguage)
+    default:
+        return getEnglishPhrases(nativeLanguage: nativeLanguage)
     }
 }
 

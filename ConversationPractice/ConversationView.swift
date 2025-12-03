@@ -146,6 +146,15 @@ struct ConversationView: View {
         }
         .onAppear {
             speechRecognizer.requestAuthorization()
+
+            // 음성 재생 완료 후 자동으로 녹음 시작하도록 콜백 설정
+            speechSynthesizer.onSpeechFinished = { [self] in
+                // 아직 녹음 중이 아니고, 대화가 진행 중이며, 대화가 끝나지 않았을 때만 자동 시작
+                if !isRecording && isConversationStarted && !isConversationEnded {
+                    print("🎤 [AUTO-START] 음성 재생 완료 → 자동으로 녹음 시작")
+                    toggleRecording()
+                }
+            }
         }
         .onDisappear {
             speechRecognizer.stopRecording()
@@ -163,6 +172,7 @@ struct ConversationView: View {
         case .chinese: return "🎉 对话完成!"
         case .spanish: return "🎉 ¡Conversación completada!"
         case .indonesian: return "🎉 Percakapan Selesai!"
+        default: return "🎉 Conversation Complete!"
         }
     }
 
@@ -174,6 +184,7 @@ struct ConversationView: View {
         case .chinese: return "再练习一次"
         case .spanish: return "Practicar de nuevo"
         case .indonesian: return "Latihan Lagi"
+        default: return "Practice Again"
         }
     }
 
@@ -195,6 +206,7 @@ struct ConversationView: View {
             case .chinese: return "母语"
             case .spanish: return "Nativo"
             case .indonesian: return "Bahasa Ibu"
+            default: return "Native"
             }
         case .learning:
             switch nativeLanguage {
@@ -204,6 +216,7 @@ struct ConversationView: View {
             case .chinese: return "学习语言"
             case .spanish: return "Aprendizaje"
             case .indonesian: return "Bahasa Belajar"
+            default: return "Learning"
             }
         case .both:
             switch nativeLanguage {
@@ -213,6 +226,7 @@ struct ConversationView: View {
             case .chinese: return "两者"
             case .spanish: return "Ambos"
             case .indonesian: return "Keduanya"
+            default: return "Both"
             }
         }
     }
@@ -245,21 +259,18 @@ struct ConversationView: View {
             print("🎤 [RECORDING] 목표 문장: \(targetPhrase)")
             print("🎤 [RECORDING] 인식된 문장: \(recognizedText)")
 
+            // 일치 여부 확인하여 상태만 표시
             if isMatchingPhrase(recognized: recognizedText, target: targetPhrase) {
-                print("✅ [RECORDING] 일치! 대화 진행")
+                print("✅ [RECORDING] 일치!")
                 recognitionStatus = .success
-                // 성공 시 대화 진행
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    proceedConversation()
-                }
             } else {
-                print("❌ [RECORDING] 불일치. 다시 시도 필요")
+                print("⚠️ [RECORDING] 불일치하지만 계속 진행")
                 recognitionStatus = .failed
-                // 실패 시 다시 시도할 수 있도록
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                    recognitionStatus = .idle
-                    recognizedText = ""
-                }
+            }
+
+            // 일치 여부와 관계없이 항상 다음으로 진행
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                proceedConversation()
             }
         } else {
             // 녹음 시작
@@ -465,6 +476,8 @@ struct VoiceInputSection: View {
                         .fontWeight(.semibold)
                         .multilineTextAlignment(.center)
                         .foregroundColor(.primary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .lineLimit(nil)
                 }
 
                 // 모국어 번역 (displayMode가 native 또는 both일 때)
@@ -474,6 +487,8 @@ struct VoiceInputSection: View {
                         .fontWeight(displayMode == .native ? .semibold : .regular)
                         .multilineTextAlignment(.center)
                         .foregroundColor(displayMode == .native ? .primary : .secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .lineLimit(nil)
                 }
             }
             .padding()
@@ -521,6 +536,7 @@ struct VoiceInputSection: View {
         case .chinese: return "请说这句话:"
         case .spanish: return "Di esta frase:"
         case .indonesian: return "Ucapkan kalimat ini:"
+        default: return "Say this phrase:"
         }
     }
 
@@ -538,6 +554,7 @@ struct VoiceInputSection: View {
             case .chinese: return "做得好! ✓"
             case .spanish: return "¡Bien hecho! ✓"
             case .indonesian: return "Bagus sekali! ✓"
+            default: return "Great job! ✓"
             }
         case .failed:
             switch localizedText.nativeLanguage {
@@ -547,6 +564,7 @@ struct VoiceInputSection: View {
             case .chinese: return "请再试一次"
             case .spanish: return "Inténtalo de nuevo"
             case .indonesian: return "Coba lagi"
+            default: return "Try again"
             }
         }
     }
@@ -635,6 +653,7 @@ struct MessageBubble: View {
         case .chinese: return "对方"
         case .spanish: return "Compañero"
         case .indonesian: return "Lawan bicara"
+        default: return "Partner"
         }
     }
 }
@@ -642,6 +661,7 @@ struct MessageBubble: View {
 // MARK: - 음성 합성 래퍼
 class SpeechSynthesizerWrapper: NSObject, ObservableObject, AVSpeechSynthesizerDelegate {
     private let synthesizer = AVSpeechSynthesizer()
+    var onSpeechFinished: (() -> Void)?  // 음성 재생 완료 콜백
 
     override init() {
         super.init()
@@ -704,6 +724,11 @@ class SpeechSynthesizerWrapper: NSObject, ObservableObject, AVSpeechSynthesizerD
 
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
         print("✅ [SYNTHESIZER] 음성 재생 완료!")
+
+        // 음성 재생 완료 후 0.5초 대기 후 자동으로 녹음 시작
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.onSpeechFinished?()
+        }
     }
 
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didPause utterance: AVSpeechUtterance) {
