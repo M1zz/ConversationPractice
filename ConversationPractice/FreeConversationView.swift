@@ -14,6 +14,7 @@ struct FreeConversationView: View {
     @State private var isRecording = false
     @State private var recognizedText = ""
     @State private var isWaitingForResponse = false
+    @State private var showTranslation = true
 
     @StateObject private var speechRecognizer = SpeechRecognizer()
     private let synthesizer = AVSpeechSynthesizer()
@@ -42,8 +43,15 @@ struct FreeConversationView: View {
 
                         // 대화 기록
                         ForEach(conversationHistory) { message in
-                            ChatBubble(message: message, localizedText: localizedText)
-                                .id(message.id)
+                            ChatBubble(
+                                message: message,
+                                showTranslation: showTranslation,
+                                localizedText: localizedText,
+                                onTap: {
+                                    speak(text: message.text)
+                                }
+                            )
+                            .id(message.id)
                         }
 
                         // 현재 인식 중인 텍스트
@@ -92,12 +100,48 @@ struct FreeConversationView: View {
         }
         .navigationTitle("\(learningLanguage.flag) \(localizedText.freeConversation)")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: {
+                    showTranslation.toggle()
+                }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: showTranslation ? "eye.fill" : "eye.slash.fill")
+                        Text(showTranslation ? translationOnLabel : translationOffLabel)
+                            .font(.caption)
+                    }
+                    .foregroundColor(showTranslation ? .blue : .gray)
+                }
+            }
+        }
         .onAppear {
             speechRecognizer.requestAuthorization()
         }
         .onDisappear {
             speechRecognizer.stopRecording()
             synthesizer.stopSpeaking(at: .immediate)
+        }
+    }
+
+    private var translationOnLabel: String {
+        switch nativeLanguage {
+        case .korean: return "번역"
+        case .english: return "Translation"
+        case .japanese: return "翻訳"
+        case .chinese: return "翻译"
+        case .spanish: return "Traducción"
+        case .indonesian: return "Terjemahan"
+        }
+    }
+
+    private var translationOffLabel: String {
+        switch nativeLanguage {
+        case .korean: return "번역 끄기"
+        case .english: return "Off"
+        case .japanese: return "オフ"
+        case .chinese: return "关闭"
+        case .spanish: return "Apagado"
+        case .indonesian: return "Matikan"
         }
     }
 
@@ -111,7 +155,8 @@ struct FreeConversationView: View {
             if !recognizedText.isEmpty {
                 let userMessage = ChatMessage(
                     speaker: .user,
-                    text: recognizedText
+                    text: recognizedText,
+                    translation: nil  // 사용자 메시지는 번역 없음
                 )
                 conversationHistory.append(userMessage)
 
@@ -134,70 +179,111 @@ struct FreeConversationView: View {
 
         // 간단한 응답 생성 (추후 AI API 연동 가능)
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            let responses = getSimpleResponses(for: learningLanguage)
-            let response = responses.randomElement() ?? "..."
+            let responses = getSimpleResponses(for: learningLanguage, nativeLanguage: nativeLanguage)
+            let response = responses.randomElement() ?? ResponseWithTranslation(text: "...", translation: "...")
 
             let aiMessage = ChatMessage(
                 speaker: .ai,
-                text: response
+                text: response.text,
+                translation: response.translation
             )
             conversationHistory.append(aiMessage)
-            speak(text: response)
+            speak(text: response.text)
             isWaitingForResponse = false
         }
     }
 
-    private func getSimpleResponses(for language: Language) -> [String] {
+    struct ResponseWithTranslation {
+        let text: String
+        let translation: String
+    }
+
+    private func getSimpleResponses(for language: Language, nativeLanguage: Language) -> [ResponseWithTranslation] {
         switch language {
         case .korean:
-            return [
-                "네, 알겠습니다.",
-                "그렇군요! 더 말씀해 주세요.",
-                "흥미롭네요.",
-                "좋은 생각이에요.",
-                "조금 더 설명해 주실 수 있나요?"
-            ]
+            return getKoreanResponses(nativeLanguage: nativeLanguage)
         case .english:
-            return [
-                "I see, that's interesting.",
-                "Could you tell me more?",
-                "That sounds great!",
-                "I understand.",
-                "Please continue."
-            ]
+            return getEnglishResponses(nativeLanguage: nativeLanguage)
         case .japanese:
-            return [
-                "なるほど、面白いですね。",
-                "もう少し教えてください。",
-                "いいですね！",
-                "わかりました。",
-                "続けてください。"
-            ]
+            return getJapaneseResponses(nativeLanguage: nativeLanguage)
         case .chinese:
-            return [
-                "我明白了。",
-                "请继续说。",
-                "很有趣！",
-                "好的。",
-                "能再解释一下吗？"
-            ]
+            return getChineseResponses(nativeLanguage: nativeLanguage)
         case .spanish:
-            return [
-                "Entiendo.",
-                "¡Qué interesante!",
-                "Por favor, continúa.",
-                "Muy bien.",
-                "¿Puedes explicar más?"
-            ]
+            return getSpanishResponses(nativeLanguage: nativeLanguage)
         case .indonesian:
-            return [
-                "Saya mengerti.",
-                "Menarik sekali!",
-                "Silakan lanjutkan.",
-                "Baik.",
-                "Bisa jelaskan lebih lanjut?"
-            ]
+            return getIndonesianResponses(nativeLanguage: nativeLanguage)
         }
+    }
+
+    private func getIndonesianResponses(nativeLanguage: Language) -> [ResponseWithTranslation] {
+        let translations: [String] = {
+            switch nativeLanguage {
+            case .korean: return ["알겠습니다.", "정말 흥미롭네요!", "계속 말씀해주세요.", "좋아요.", "더 설명해주실 수 있나요?"]
+            case .english: return ["I understand.", "Very interesting!", "Please continue.", "Good.", "Can you explain more?"]
+            case .japanese: return ["わかりました。", "とても面白いですね！", "続けてください。", "いいですね。", "もっと説明していただけますか？"]
+            case .chinese: return ["我明白了。", "非常有趣！", "请继续。", "好的。", "能多解释一下吗？"]
+            case .spanish: return ["Entiendo.", "¡Muy interesante!", "Por favor continúa.", "Bien.", "¿Puedes explicar más?"]
+            case .indonesian: return ["Saya mengerti.", "Menarik sekali!", "Silakan lanjutkan.", "Baik.", "Bisa jelaskan lebih lanjut?"]
+            }
+        }()
+
+        return [
+            ResponseWithTranslation(text: "Saya mengerti.", translation: translations[0]),
+            ResponseWithTranslation(text: "Menarik sekali!", translation: translations[1]),
+            ResponseWithTranslation(text: "Silakan lanjutkan.", translation: translations[2]),
+            ResponseWithTranslation(text: "Baik.", translation: translations[3]),
+            ResponseWithTranslation(text: "Bisa jelaskan lebih lanjut?", translation: translations[4])
+        ]
+    }
+
+    private func getKoreanResponses(nativeLanguage: Language) -> [ResponseWithTranslation] {
+        return [
+            ResponseWithTranslation(text: "네, 알겠습니다.", translation: "Yes, I understand."),
+            ResponseWithTranslation(text: "그렇군요! 더 말씀해 주세요.", translation: "I see! Please tell me more."),
+            ResponseWithTranslation(text: "흥미롭네요.", translation: "That's interesting."),
+            ResponseWithTranslation(text: "좋은 생각이에요.", translation: "That's a good idea."),
+            ResponseWithTranslation(text: "조금 더 설명해 주실 수 있나요?", translation: "Could you explain a bit more?")
+        ]
+    }
+
+    private func getEnglishResponses(nativeLanguage: Language) -> [ResponseWithTranslation] {
+        return [
+            ResponseWithTranslation(text: "I see, that's interesting.", translation: "알겠어요, 흥미롭네요."),
+            ResponseWithTranslation(text: "Could you tell me more?", translation: "더 말씀해주실 수 있나요?"),
+            ResponseWithTranslation(text: "That sounds great!", translation: "좋아 들리네요!"),
+            ResponseWithTranslation(text: "I understand.", translation: "이해했어요."),
+            ResponseWithTranslation(text: "Please continue.", translation: "계속해주세요.")
+        ]
+    }
+
+    private func getJapaneseResponses(nativeLanguage: Language) -> [ResponseWithTranslation] {
+        return [
+            ResponseWithTranslation(text: "なるほど、面白いですね。", translation: "I see, that's interesting."),
+            ResponseWithTranslation(text: "もう少し教えてください。", translation: "Please tell me a bit more."),
+            ResponseWithTranslation(text: "いいですね！", translation: "That's good!"),
+            ResponseWithTranslation(text: "わかりました。", translation: "I understand."),
+            ResponseWithTranslation(text: "続けてください。", translation: "Please continue.")
+        ]
+    }
+
+    private func getChineseResponses(nativeLanguage: Language) -> [ResponseWithTranslation] {
+        return [
+            ResponseWithTranslation(text: "我明白了。", translation: "I understand."),
+            ResponseWithTranslation(text: "请继续说。", translation: "Please continue."),
+            ResponseWithTranslation(text: "很有趣！", translation: "Very interesting!"),
+            ResponseWithTranslation(text: "好的。", translation: "Okay."),
+            ResponseWithTranslation(text: "能再解释一下吗？", translation: "Can you explain again?")
+        ]
+    }
+
+    private func getSpanishResponses(nativeLanguage: Language) -> [ResponseWithTranslation] {
+        return [
+            ResponseWithTranslation(text: "Entiendo.", translation: "I understand."),
+            ResponseWithTranslation(text: "¡Qué interesante!", translation: "How interesting!"),
+            ResponseWithTranslation(text: "Por favor, continúa.", translation: "Please continue."),
+            ResponseWithTranslation(text: "Muy bien.", translation: "Very good."),
+            ResponseWithTranslation(text: "¿Puedes explicar más?", translation: "Can you explain more?")
+        ]
     }
 
     private func speak(text: String) {
@@ -213,6 +299,7 @@ struct ChatMessage: Identifiable {
     let id = UUID()
     let speaker: ChatSpeaker
     let text: String
+    let translation: String?
 
     enum ChatSpeaker {
         case user
@@ -223,7 +310,9 @@ struct ChatMessage: Identifiable {
 // MARK: - 채팅 버블
 struct ChatBubble: View {
     let message: ChatMessage
+    let showTranslation: Bool
     let localizedText: LocalizedText
+    let onTap: () -> Void
 
     var isUser: Bool {
         message.speaker == .user
@@ -238,11 +327,24 @@ struct ChatBubble: View {
                     .font(.caption2)
                     .foregroundColor(.secondary)
 
-                Text(message.text)
-                    .padding(12)
-                    .background(isUser ? Color.blue : Color(.systemGray5))
-                    .foregroundColor(isUser ? .white : .primary)
-                    .cornerRadius(16)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(message.text)
+                        .font(.body)
+
+                    // 번역 표시
+                    if showTranslation, let translation = message.translation {
+                        Text(translation)
+                            .font(.caption)
+                            .foregroundColor(isUser ? .white.opacity(0.8) : .secondary)
+                    }
+                }
+                .padding(12)
+                .background(isUser ? Color.blue : Color(.systemGray5))
+                .foregroundColor(isUser ? .white : .primary)
+                .cornerRadius(16)
+                .onTapGesture {
+                    onTap()
+                }
             }
 
             if !isUser { Spacer() }
@@ -297,7 +399,8 @@ class SpeechRecognizer: ObservableObject {
 
         let audioSession = AVAudioSession.sharedInstance()
         do {
-            try audioSession.setCategory(.record, mode: .measurement, options: .duckOthers)
+            // playAndRecord 카테고리로 녹음과 재생을 모두 지원
+            try audioSession.setCategory(.playAndRecord, mode: .measurement, options: [.defaultToSpeaker, .duckOthers])
             try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
         } catch {
             print("오디오 세션 설정 실패: \(error)")

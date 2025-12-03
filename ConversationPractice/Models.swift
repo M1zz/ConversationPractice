@@ -1,7 +1,7 @@
 import Foundation
 
 // MARK: - 언어 모델 (모국어 & 학습 언어 공통)
-enum Language: String, CaseIterable, Identifiable {
+enum Language: String, CaseIterable, Identifiable, Codable {
     case korean = "ko-KR"
     case english = "en-US"
     case japanese = "ja-JP"

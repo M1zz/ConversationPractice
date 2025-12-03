@@ -16,6 +16,12 @@
 		A100001C232323230000001 /* ModeSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100001D232323230000001 /* ModeSelectionView.swift */; };
 		A100001E232323230000001 /* FreeConversationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100001F232323230000001 /* FreeConversationView.swift */; };
 		A1000020232323230000001 /* LearningLanguageSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000021232323230000001 /* LearningLanguageSelectionView.swift */; };
+		A1000023232323230000001 /* LanguageSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000022232323230000001 /* LanguageSettings.swift */; };
+		A1000025232323230000001 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000024232323230000001 /* SettingsView.swift */; };
+		A1000027232323230000001 /* PronunciationPracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000026232323230000001 /* PronunciationPracticeView.swift */; };
+		A1000029232323230000001 /* CustomScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000028232323230000001 /* CustomScenario.swift */; };
+		A100002B232323230000001 /* ScenarioCreationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100002A232323230000001 /* ScenarioCreationView.swift */; };
+		A100002D232323230000001 /* TranslationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100002C232323230000001 /* TranslationService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,6 +35,12 @@
 		A100001D232323230000001 /* ModeSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModeSelectionView.swift; sourceTree = "<group>"; };
 		A100001F232323230000001 /* FreeConversationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreeConversationView.swift; sourceTree = "<group>"; };
 		A1000021232323230000001 /* LearningLanguageSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LearningLanguageSelectionView.swift; sourceTree = "<group>"; };
+		A1000022232323230000001 /* LanguageSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageSettings.swift; sourceTree = "<group>"; };
+		A1000024232323230000001 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		A1000026232323230000001 /* PronunciationPracticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PronunciationPracticeView.swift; sourceTree = "<group>"; };
+		A1000028232323230000001 /* CustomScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomScenario.swift; sourceTree = "<group>"; };
+		A100002A232323230000001 /* ScenarioCreationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenarioCreationView.swift; sourceTree = "<group>"; };
+		A100002C232323230000001 /* TranslationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,6 +73,12 @@
 				A100001D232323230000001 /* ModeSelectionView.swift */,
 				A100001F232323230000001 /* FreeConversationView.swift */,
 				A1000021232323230000001 /* LearningLanguageSelectionView.swift */,
+				A1000022232323230000001 /* LanguageSettings.swift */,
+				A1000024232323230000001 /* SettingsView.swift */,
+				A1000026232323230000001 /* PronunciationPracticeView.swift */,
+				A1000028232323230000001 /* CustomScenario.swift */,
+				A100002A232323230000001 /* ScenarioCreationView.swift */,
+				A100002C232323230000001 /* TranslationService.swift */,
 				A100000A232323230000001 /* Assets.xcassets */,
 			);
 			path = ConversationPractice;
@@ -152,6 +170,12 @@
 				A100001C232323230000001 /* ModeSelectionView.swift in Sources */,
 				A100001E232323230000001 /* FreeConversationView.swift in Sources */,
 				A1000020232323230000001 /* LearningLanguageSelectionView.swift in Sources */,
+				A1000023232323230000001 /* LanguageSettings.swift in Sources */,
+				A1000025232323230000001 /* SettingsView.swift in Sources */,
+				A1000027232323230000001 /* PronunciationPracticeView.swift in Sources */,
+				A1000029232323230000001 /* CustomScenario.swift in Sources */,
+				A100002B232323230000001 /* ScenarioCreationView.swift in Sources */,
+				A100002D232323230000001 /* TranslationService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

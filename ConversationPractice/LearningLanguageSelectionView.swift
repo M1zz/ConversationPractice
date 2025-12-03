@@ -2,6 +2,7 @@ import SwiftUI
 
 struct LearningLanguageSelectionView: View {
     let nativeLanguage: Language
+    @ObservedObject private var languageSettings = LanguageSettings.shared
 
     private var localizedText: LocalizedText {
         LocalizedText(nativeLanguage: nativeLanguage)
@@ -33,10 +34,11 @@ struct LearningLanguageSelectionView: View {
                     GridItem(.flexible())
                 ], spacing: 16) {
                     ForEach(availableLanguages) { language in
-                        NavigationLink(destination: ModeSelectionView(
-                            nativeLanguage: nativeLanguage,
-                            learningLanguage: language
-                        )) {
+                        Button(action: {
+                            // 언어 설정 저장
+                            languageSettings.nativeLanguage = nativeLanguage
+                            languageSettings.learningLanguage = language
+                        }) {
                             LanguageCard(language: language)
                         }
                         .buttonStyle(PlainButtonStyle())

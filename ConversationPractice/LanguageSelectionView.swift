@@ -2,8 +2,7 @@ import SwiftUI
 
 struct LanguageSelectionView: View {
     var body: some View {
-        NavigationView {
-            VStack(spacing: 24) {
+        VStack(spacing: 24) {
                 // 헤더 - 모든 언어로 표시
                 VStack(spacing: 12) {
                     Text("Select Your Language")
@@ -34,7 +33,6 @@ struct LanguageSelectionView: View {
             }
             .background(Color(.systemGroupedBackground))
             .navigationBarHidden(true)
-        }
     }
 }
 
@@ -60,5 +58,7 @@ struct LanguageCard: View {
 }
 
 #Preview {
-    LanguageSelectionView()
+    NavigationView {
+        LanguageSelectionView()
+    }
 }

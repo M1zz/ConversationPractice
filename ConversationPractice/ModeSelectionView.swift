@@ -3,6 +3,7 @@ import SwiftUI
 struct ModeSelectionView: View {
     let nativeLanguage: Language
     let learningLanguage: Language
+    @State private var showSettings = false
 
     private var localizedText: LocalizedText {
         LocalizedText(nativeLanguage: nativeLanguage)
@@ -38,6 +39,18 @@ struct ModeSelectionView: View {
         }
         .background(Color(.systemGroupedBackground))
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: {
+                    showSettings = true
+                }) {
+                    Image(systemName: "gearshape")
+                }
+            }
+        }
+        .sheet(isPresented: $showSettings) {
+            SettingsView()
+        }
     }
 
     @ViewBuilder
@@ -54,7 +67,7 @@ struct ModeSelectionView: View {
                 learningLanguage: learningLanguage
             )
         case .pronunciation:
-            FreeConversationView(
+            PronunciationPracticeView(
                 nativeLanguage: nativeLanguage,
                 learningLanguage: learningLanguage
             )
