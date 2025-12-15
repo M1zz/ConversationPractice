@@ -24,6 +24,7 @@ struct ConversationView: View {
     @State private var isConversationStarted = false
     @State private var isConversationEnded = false
     @State private var displayMode: LanguageDisplayMode = .both  // 기본값: 둘 다 표시
+    @State private var showingScriptViewer = false
 
     // 음성 관련
     @State private var isRecording = false
@@ -129,6 +130,11 @@ struct ConversationView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 HStack(spacing: 12) {
+                    // Script viewer button
+                    Button(action: { showingScriptViewer = true }) {
+                        Image(systemName: "doc.text.magnifyingglass")
+                    }
+
                     Button(action: cycleDisplayMode) {
                         HStack(spacing: 4) {
                             Image(systemName: displayModeIcon)
@@ -159,6 +165,13 @@ struct ConversationView: View {
         .onDisappear {
             speechRecognizer.stopRecording()
             speechSynthesizer.stopSpeaking()
+        }
+        .sheet(isPresented: $showingScriptViewer) {
+            ScriptViewerView(
+                scenario: scenario,
+                nativeLanguage: nativeLanguage,
+                learningLanguage: learningLanguage
+            )
         }
     }
 

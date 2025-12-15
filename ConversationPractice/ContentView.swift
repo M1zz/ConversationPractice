@@ -190,6 +190,7 @@ struct ContentView: View {
 struct ScenarioCard: View {
     let scenario: Scenario
     let nativeLanguage: Language
+    @State private var showingScriptViewer = false
 
     var body: some View {
         HStack(spacing: 16) {
@@ -213,6 +214,14 @@ struct ScenarioCard: View {
 
             Spacer()
 
+            // Script viewer button
+            Button(action: { showingScriptViewer = true }) {
+                Image(systemName: "doc.text.magnifyingglass")
+                    .foregroundColor(.blue)
+                    .font(.title3)
+            }
+            .buttonStyle(PlainButtonStyle())
+
             Image(systemName: "chevron.right")
                 .foregroundColor(.secondary)
         }
@@ -220,6 +229,13 @@ struct ScenarioCard: View {
         .background(Color(.systemBackground))
         .cornerRadius(16)
         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+        .sheet(isPresented: $showingScriptViewer) {
+            ScriptViewerView(
+                scenario: scenario,
+                nativeLanguage: nativeLanguage,
+                learningLanguage: scenario.learningLanguage
+            )
+        }
     }
 }
 
@@ -227,6 +243,7 @@ struct ScenarioCard: View {
 struct CustomScenarioCard: View {
     let scenario: CustomScenario
     let nativeLanguage: Language
+    @State private var showingScriptViewer = false
 
     var body: some View {
         HStack(spacing: 16) {
@@ -250,6 +267,14 @@ struct CustomScenarioCard: View {
 
             Spacer()
 
+            // Script viewer button
+            Button(action: { showingScriptViewer = true }) {
+                Image(systemName: "doc.text.magnifyingglass")
+                    .foregroundColor(.green)
+                    .font(.title3)
+            }
+            .buttonStyle(PlainButtonStyle())
+
             Image(systemName: "chevron.right")
                 .foregroundColor(.secondary)
         }
@@ -257,6 +282,13 @@ struct CustomScenarioCard: View {
         .background(Color(.systemBackground))
         .cornerRadius(16)
         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+        .sheet(isPresented: $showingScriptViewer) {
+            ScriptViewerView(
+                scenario: scenario.toScenario(),
+                nativeLanguage: nativeLanguage,
+                learningLanguage: scenario.learningLanguage
+            )
+        }
     }
 }
 
