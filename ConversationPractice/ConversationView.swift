@@ -33,6 +33,9 @@ struct ConversationView: View {
     @StateObject private var speechRecognizer = SpeechRecognizer()
     @StateObject private var speechSynthesizer = SpeechSynthesizerWrapper()
 
+    // 대화 기록 관리
+    @StateObject private var historyManager = ConversationHistoryManager.shared
+
     @Environment(\.dismiss) private var dismiss
 
     enum RecognitionStatus {
@@ -160,6 +163,11 @@ struct ConversationView: View {
                     print("🎤 [AUTO-START] 음성 재생 완료 → 자동으로 녹음 시작")
                     toggleRecording()
                 }
+            }
+        }
+        .onChange(of: isConversationEnded) { _, newValue in
+            if newValue && !conversationHistory.isEmpty {
+                saveConversationHistory()
             }
         }
         .onDisappear {
@@ -422,6 +430,18 @@ struct ConversationView: View {
             }
         }
         print("📱 [CONVERSATION] === proceedConversation 완료 ===\n")
+    }
+
+    private func saveConversationHistory() {
+        let history = ConversationHistory(
+            scenarioId: scenario.id,
+            scenarioTitle: scenario.title,
+            scenarioIcon: scenario.icon,
+            learningLanguage: scenario.learningLanguage,
+            conversationNodes: conversationHistory
+        )
+        historyManager.saveHistory(history)
+        print("💾 [HISTORY] 대화 기록 저장 완료: \(scenario.getTitle(for: nativeLanguage))")
     }
 
     private func resetConversation() {

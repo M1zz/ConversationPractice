@@ -6,19 +6,19 @@ struct ConversationPracticeApp: App {
 
     var body: some Scene {
         WindowGroup {
-            NavigationView {
-                if languageSettings.isConfigured,
-                   let nativeLanguage = languageSettings.nativeLanguage,
-                   let learningLanguage = languageSettings.learningLanguage {
-                    ContentView(
-                        nativeLanguage: nativeLanguage,
-                        learningLanguage: learningLanguage
-                    )
-                } else {
+            if languageSettings.isConfigured,
+               let nativeLanguage = languageSettings.nativeLanguage,
+               let learningLanguage = languageSettings.learningLanguage {
+                CategoryListView(
+                    nativeLanguage: nativeLanguage,
+                    learningLanguage: learningLanguage
+                )
+            } else {
+                NavigationView {
                     LanguageSelectionView()
                 }
+                .navigationViewStyle(StackNavigationViewStyle())
             }
-            .navigationViewStyle(StackNavigationViewStyle())
         }
     }
 }

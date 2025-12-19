@@ -8,6 +8,7 @@ struct ContentView: View {
     @State private var showingScenarioCreation = false
     @State private var showingScenarioImport = false
     @State private var showSettings = false
+    @State private var showingHistory = false
 
     private var localizedText: LocalizedText {
         LocalizedText(nativeLanguage: nativeLanguage)
@@ -90,10 +91,18 @@ struct ContentView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                Button(action: {
-                    showSettings = true
-                }) {
-                    Image(systemName: "gearshape")
+                HStack(spacing: 16) {
+                    Button(action: {
+                        showSettings = true
+                    }) {
+                        Image(systemName: "gearshape")
+                    }
+
+                    Button(action: {
+                        showingHistory = true
+                    }) {
+                        Image(systemName: "clock.arrow.circlepath")
+                    }
                 }
             }
             ToolbarItem(placement: .navigationBarTrailing) {
@@ -122,6 +131,9 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showSettings) {
             SettingsView()
+        }
+        .sheet(isPresented: $showingHistory) {
+            ConversationHistoryView(nativeLanguage: nativeLanguage)
         }
     }
 

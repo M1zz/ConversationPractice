@@ -53,6 +53,7 @@ struct CustomScenario: Identifiable, Codable {
         return Scenario(
             id: id,
             learningLanguage: learningLanguage,
+            category: .casual,
             icon: icon,
             title: titleDict,
             description: descDict,

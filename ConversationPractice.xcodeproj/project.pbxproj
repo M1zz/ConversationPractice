@@ -12,6 +12,12 @@
 		A1000001232323230000001 /* ConversationPracticeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002232323230000001 /* ConversationPracticeApp.swift */; };
 		A1000003232323230000001 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000004232323230000001 /* ContentView.swift */; };
 		A1000005232323230000001 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000006232323230000001 /* Models.swift */; };
+		A1000041232323230000001 /* IndonesianScenarios.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000040232323230000001 /* IndonesianScenarios.swift */; };
+		A1000043232323230000001 /* KoreanScenarios.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000042232323230000001 /* KoreanScenarios.swift */; };
+		A1000045232323230000001 /* EnglishScenarios.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000044232323230000001 /* EnglishScenarios.swift */; };
+		A1000047232323230000001 /* JapaneseScenarios.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000046232323230000001 /* JapaneseScenarios.swift */; };
+		A1000049232323230000001 /* ChineseScenarios.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000048232323230000001 /* ChineseScenarios.swift */; };
+		A1000051232323230000001 /* SpanishScenarios.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000050232323230000001 /* SpanishScenarios.swift */; };
 		A1000007232323230000001 /* ConversationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000008232323230000001 /* ConversationView.swift */; };
 		A1000009232323230000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A100000A232323230000001 /* Assets.xcassets */; };
 		A100001A232323230000001 /* LanguageSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100001B232323230000001 /* LanguageSelectionView.swift */; };
@@ -24,6 +30,12 @@
 		A1000029232323230000001 /* CustomScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000028232323230000001 /* CustomScenario.swift */; };
 		A100002B232323230000001 /* ScenarioCreationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100002A232323230000001 /* ScenarioCreationView.swift */; };
 		A100002D232323230000001 /* TranslationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100002C232323230000001 /* TranslationService.swift */; };
+	A100002F232323230000001 /* ScriptViewerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100002E232323230000001 /* ScriptViewerView.swift */; };
+	A1000030232323230000001 /* ConversationHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000031232323230000001 /* ConversationHistory.swift */; };
+	A1000032232323230000001 /* ConversationHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000033232323230000001 /* ConversationHistoryView.swift */; };
+	A1000034232323230000001 /* CategoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000035232323230000001 /* CategoryView.swift */; };
+	A1000036232323230000001 /* ScenarioListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000037232323230000001 /* ScenarioListView.swift */; };
+	A1000038232323230000001 /* MessengerScriptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000039232323230000001 /* MessengerScriptView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,6 +43,12 @@
 		A1000002232323230000001 /* ConversationPracticeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationPracticeApp.swift; sourceTree = "<group>"; };
 		A1000004232323230000001 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A1000006232323230000001 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+	A1000040232323230000001 /* IndonesianScenarios.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndonesianScenarios.swift; sourceTree = "<group>"; };
+	A1000042232323230000001 /* KoreanScenarios.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KoreanScenarios.swift; sourceTree = "<group>"; };
+	A1000044232323230000001 /* EnglishScenarios.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnglishScenarios.swift; sourceTree = "<group>"; };
+	A1000046232323230000001 /* JapaneseScenarios.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JapaneseScenarios.swift; sourceTree = "<group>"; };
+	A1000048232323230000001 /* ChineseScenarios.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChineseScenarios.swift; sourceTree = "<group>"; };
+	A1000050232323230000001 /* SpanishScenarios.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanishScenarios.swift; sourceTree = "<group>"; };
 		A1000008232323230000001 /* ConversationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationView.swift; sourceTree = "<group>"; };
 		A100000A232323230000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A100000B232323230000001 /* ConversationPractice.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ConversationPractice.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -44,6 +62,12 @@
 		A1000028232323230000001 /* CustomScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomScenario.swift; sourceTree = "<group>"; };
 		A100002A232323230000001 /* ScenarioCreationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenarioCreationView.swift; sourceTree = "<group>"; };
 		A100002C232323230000001 /* TranslationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationService.swift; sourceTree = "<group>"; };
+	A100002E232323230000001 /* ScriptViewerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptViewerView.swift; sourceTree = "<group>"; };
+	A1000031232323230000001 /* ConversationHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationHistory.swift; sourceTree = "<group>"; };
+	A1000033232323230000001 /* ConversationHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationHistoryView.swift; sourceTree = "<group>"; };
+	A1000035232323230000001 /* CategoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryView.swift; sourceTree = "<group>"; };
+	A1000037232323230000001 /* ScenarioListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenarioListView.swift; sourceTree = "<group>"; };
+	A1000039232323230000001 /* MessengerScriptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessengerScriptView.swift; sourceTree = "<group>"; };
 		F823200594FFAE6C4B744DB3 /* ScenarioImporter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ScenarioImporter.swift; path = ScenarioImporter.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -72,6 +96,12 @@
 				A1000002232323230000001 /* ConversationPracticeApp.swift */,
 				A1000004232323230000001 /* ContentView.swift */,
 				A1000006232323230000001 /* Models.swift */,
+				A1000040232323230000001 /* IndonesianScenarios.swift */,
+				A1000042232323230000001 /* KoreanScenarios.swift */,
+				A1000044232323230000001 /* EnglishScenarios.swift */,
+				A1000046232323230000001 /* JapaneseScenarios.swift */,
+				A1000048232323230000001 /* ChineseScenarios.swift */,
+				A1000050232323230000001 /* SpanishScenarios.swift */,
 				A1000008232323230000001 /* ConversationView.swift */,
 				A100001B232323230000001 /* LanguageSelectionView.swift */,
 				A100001D232323230000001 /* ModeSelectionView.swift */,
@@ -82,6 +112,12 @@
 				A1000026232323230000001 /* PronunciationPracticeView.swift */,
 				A1000028232323230000001 /* CustomScenario.swift */,
 				A100002A232323230000001 /* ScenarioCreationView.swift */,
+				A100002E232323230000001 /* ScriptViewerView.swift */,
+				A1000031232323230000001 /* ConversationHistory.swift */,
+				A1000033232323230000001 /* ConversationHistoryView.swift */,
+				A1000035232323230000001 /* CategoryView.swift */,
+				A1000037232323230000001 /* ScenarioListView.swift */,
+				A1000039232323230000001 /* MessengerScriptView.swift */,
 				A100002C232323230000001 /* TranslationService.swift */,
 				A100000A232323230000001 /* Assets.xcassets */,
 				F823200594FFAE6C4B744DB3 /* ScenarioImporter.swift */,
@@ -171,6 +207,12 @@
 				A1000001232323230000001 /* ConversationPracticeApp.swift in Sources */,
 				A1000003232323230000001 /* ContentView.swift in Sources */,
 				A1000005232323230000001 /* Models.swift in Sources */,
+				A1000041232323230000001 /* IndonesianScenarios.swift in Sources */,
+				A1000043232323230000001 /* KoreanScenarios.swift in Sources */,
+				A1000045232323230000001 /* EnglishScenarios.swift in Sources */,
+				A1000047232323230000001 /* JapaneseScenarios.swift in Sources */,
+				A1000049232323230000001 /* ChineseScenarios.swift in Sources */,
+				A1000051232323230000001 /* SpanishScenarios.swift in Sources */,
 				A1000007232323230000001 /* ConversationView.swift in Sources */,
 				A100001A232323230000001 /* LanguageSelectionView.swift in Sources */,
 				A100001C232323230000001 /* ModeSelectionView.swift in Sources */,
@@ -182,6 +224,12 @@
 				A1000029232323230000001 /* CustomScenario.swift in Sources */,
 				A100002B232323230000001 /* ScenarioCreationView.swift in Sources */,
 				A100002D232323230000001 /* TranslationService.swift in Sources */,
+				A100002F232323230000001 /* ScriptViewerView.swift in Sources */,
+				A1000030232323230000001 /* ConversationHistory.swift in Sources */,
+				A1000032232323230000001 /* ConversationHistoryView.swift in Sources */,
+				A1000034232323230000001 /* CategoryView.swift in Sources */,
+				A1000036232323230000001 /* ScenarioListView.swift in Sources */,
+				A1000038232323230000001 /* MessengerScriptView.swift in Sources */,
 				3A0B80600F6EC2132E07259B /* ScenarioImporter.swift in Sources */,
 				136F3E3D766773B37E843104 /* ScenarioImportView.swift in Sources */,
 			);

@@ -95,6 +95,9 @@ struct ScriptViewerView: View {
                 }
                 .padding(.vertical)
             }
+            .onAppear {
+                expandAllNodes()
+            }
             .navigationTitle(localizedText.scriptViewerTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -490,6 +493,7 @@ extension LocalizedText {
         scenario: Scenario(
             id: "preview",
             learningLanguage: .indonesian,
+            category: .basic,
             icon: "🚻",
             title: [.korean: "화장실 찾기", .english: "Finding Bathroom"],
             description: [.korean: "화장실 위치 물어보기", .english: "Ask for bathroom"],

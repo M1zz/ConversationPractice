@@ -1,6 +1,9 @@
 import SwiftUI
 
 struct LanguageSelectionView: View {
+    // 시나리오가 있는 언어만 표시
+    private let supportedLanguages: [Language] = [.indonesian, .korean, .english, .japanese, .chinese, .spanish]
+
     var body: some View {
         VStack(spacing: 24) {
                 // 헤더 - 모든 언어로 표시
@@ -20,7 +23,7 @@ struct LanguageSelectionView: View {
                     GridItem(.flexible()),
                     GridItem(.flexible())
                 ], spacing: 16) {
-                    ForEach(Language.allCases) { language in
+                    ForEach(supportedLanguages) { language in
                         NavigationLink(destination: LearningLanguageSelectionView(nativeLanguage: language)) {
                             LanguageCard(language: language)
                         }
