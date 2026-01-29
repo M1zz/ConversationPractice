@@ -46,8 +46,12 @@ struct ScriptViewerView: View {
 
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
+            ZStack {
+                Color(.systemGroupedBackground)
+                    .ignoresSafeArea()
+
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
                     // Scenario Header
                     ScriptHeaderView(
                         icon: scenario.icon,
@@ -94,6 +98,7 @@ struct ScriptViewerView: View {
                     }
                 }
                 .padding(.vertical)
+            }
             }
             .onAppear {
                 expandAllNodes()
@@ -216,80 +221,101 @@ struct ScriptNodeView: View {
     let displayMode: ScriptDisplayMode
     let depth: Int
 
-    private var speakerIcon: String {
-        speaker == .user ? "person.circle.fill" : "person.2.circle.fill"
-    }
-
-    private var speakerColor: Color {
-        speaker == .user ? .blue : .green
-    }
-
-    private var backgroundColor: Color {
-        speakerColor.opacity(0.1)
+    private var isUser: Bool {
+        speaker == .user
     }
 
     private var speakerLabel: String {
-        speaker == .user ? "User" : "AI"
+        isUser ? "Me" : "Partner"
     }
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            // Connection line indicator (visual depth)
-            if depth > 0 {
-                Rectangle()
-                    .fill(Color.gray.opacity(0.3))
-                    .frame(width: 2)
-                    .padding(.leading, CGFloat(depth - 1) * 20)
+        HStack(alignment: .bottom, spacing: 8) {
+            if isUser {
+                Spacer(minLength: 60)
+            } else {
+                // 상대방 아이콘
+                Circle()
+                    .fill(Color.blue.opacity(0.2))
+                    .frame(width: 36, height: 36)
+                    .overlay(
+                        Image(systemName: "person.fill")
+                            .font(.system(size: 16))
+                            .foregroundColor(.blue)
+                    )
             }
 
-            VStack(alignment: .leading, spacing: 8) {
-                // Speaker label with icon
-                HStack(spacing: 6) {
-                    Image(systemName: speakerIcon)
-                        .font(.caption)
-                        .foregroundColor(speakerColor)
+            VStack(alignment: isUser ? .trailing : .leading, spacing: 4) {
+                // 스피커 라벨
+                Text(speakerLabel)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal, 4)
 
-                    Text(speakerLabel)
-                        .font(.caption)
-                        .fontWeight(.semibold)
-                        .foregroundColor(speakerColor)
-                }
-
-                // Message content based on display mode
-                VStack(alignment: .leading, spacing: 4) {
+                // 메시지 버블
+                VStack(alignment: isUser ? .trailing : .leading, spacing: 4) {
+                    // Message content based on display mode
                     switch displayMode {
                     case .both:
                         Text(learningText)
                             .font(.body)
+                            .foregroundColor(isUser ? .white : .primary)
                         if let nativeText = nativeText {
                             Text(nativeText)
                                 .font(.caption)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(isUser ? .white.opacity(0.85) : .secondary)
                         }
                     case .learningOnly:
                         Text(learningText)
                             .font(.body)
-                            .fontWeight(.semibold)
+                            .foregroundColor(isUser ? .white : .primary)
                     case .nativeOnly:
                         if let nativeText = nativeText {
                             Text(nativeText)
                                 .font(.body)
-                                .fontWeight(.semibold)
+                                .foregroundColor(isUser ? .white : .primary)
                         } else {
                             Text(learningText)
                                 .font(.body)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(isUser ? .white : .primary)
                         }
                     }
                 }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+                .background(
+                    Group {
+                        if isUser {
+                            LinearGradient(
+                                gradient: Gradient(colors: [Color.blue, Color.blue.opacity(0.8)]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        } else {
+                            Color(.systemGray5)
+                        }
+                    }
+                )
+                .cornerRadius(18)
+                .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
             }
-            .padding(12)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(backgroundColor)
-            .cornerRadius(10)
-            .padding(.leading, CGFloat(depth) * 20)
+            .frame(maxWidth: 280, alignment: isUser ? .trailing : .leading)
+
+            if !isUser {
+                Spacer(minLength: 60)
+            } else {
+                // 내 아이콘
+                Circle()
+                    .fill(Color.green.opacity(0.2))
+                    .frame(width: 36, height: 36)
+                    .overlay(
+                        Image(systemName: "person.fill")
+                            .font(.system(size: 16))
+                            .foregroundColor(.green)
+                    )
+            }
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, 12)
     }
 }
 

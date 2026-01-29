@@ -137,6 +137,7 @@ struct ConversationView: View {
                         recognizedText: recognizedText,
                         recognitionStatus: recognitionStatus,
                         isWaitingForConfirmation: isWaitingForConfirmation,
+                        isSpeaking: speechSynthesizer.isSpeaking,
                         displayMode: displayMode,
                         localizedText: localizedText,
                         onRecordTap: toggleRecording
@@ -480,6 +481,7 @@ struct VoiceInputSection: View {
     let recognizedText: String
     let recognitionStatus: ConversationView.RecognitionStatus
     let isWaitingForConfirmation: Bool  // 확인 대기 상태
+    let isSpeaking: Bool                // TTS 재생 중 상태
     let displayMode: LanguageDisplayMode
     let localizedText: LocalizedText
     let onRecordTap: () -> Void
@@ -542,6 +544,8 @@ struct VoiceInputSection: View {
                         .foregroundColor(.white)
                 }
             }
+            .disabled(isSpeaking)  // TTS 재생 중에는 비활성화
+            .opacity(isSpeaking ? 0.5 : 1.0)
             .scaleEffect(isRecording ? 1.1 : 1.0)
             .animation(.easeInOut(duration: 0.2), value: isRecording)
 
@@ -572,6 +576,19 @@ struct VoiceInputSection: View {
     }
 
     private var statusMessage: String {
+        // TTS 재생 중일 때
+        if isSpeaking {
+            switch localizedText.nativeLanguage {
+            case .korean: return "잘 듣고 답해주세요"
+            case .english: return "Listen carefully and respond"
+            case .japanese: return "よく聞いて答えてください"
+            case .chinese: return "仔细听并回答"
+            case .spanish: return "Escucha atentamente y responde"
+            case .indonesian: return "Dengarkan baik-baik dan jawab"
+            default: return "Listen carefully and respond"
+            }
+        }
+
         if isWaitingForConfirmation {
             switch localizedText.nativeLanguage {
             case .korean: return "탭하여 계속하기"
@@ -718,6 +735,7 @@ struct MessageBubble: View {
 class SpeechSynthesizerWrapper: NSObject, ObservableObject, AVSpeechSynthesizerDelegate {
     private let synthesizer = AVSpeechSynthesizer()
     var onSpeechFinished: (() -> Void)?  // 음성 재생 완료 콜백
+    @Published var isSpeaking: Bool = false  // 음성 재생 중 상태
 
     override init() {
         super.init()
@@ -776,10 +794,16 @@ class SpeechSynthesizerWrapper: NSObject, ObservableObject, AVSpeechSynthesizerD
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didStart utterance: AVSpeechUtterance) {
         print("✅ [SYNTHESIZER] 음성 재생 시작!")
         print("✅ [SYNTHESIZER] 재생 중인 텍스트: \(utterance.speechString)")
+        DispatchQueue.main.async { [weak self] in
+            self?.isSpeaking = true
+        }
     }
 
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
         print("✅ [SYNTHESIZER] 음성 재생 완료!")
+        DispatchQueue.main.async { [weak self] in
+            self?.isSpeaking = false
+        }
 
         // 음성 재생 완료 후 0.5초 대기 후 자동으로 녹음 시작
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
@@ -797,6 +821,9 @@ class SpeechSynthesizerWrapper: NSObject, ObservableObject, AVSpeechSynthesizerD
 
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
         print("🛑 [SYNTHESIZER] 음성 취소됨")
+        DispatchQueue.main.async { [weak self] in
+            self?.isSpeaking = false
+        }
     }
 
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, willSpeakRangeOfSpeechString characterRange: NSRange, utterance: AVSpeechUtterance) {
