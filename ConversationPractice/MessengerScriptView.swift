@@ -48,42 +48,47 @@ struct MessengerScriptView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            // Header
-            VStack(spacing: 8) {
-                HStack {
-                    Text(scenario.icon)
-                        .font(.system(size: 40))
+        ZStack {
+            Color(.systemGroupedBackground)
+                .ignoresSafeArea()
 
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(scenario.getTitle(for: nativeLanguage))
-                            .font(.headline)
+            VStack(spacing: 0) {
+                // Header
+                VStack(spacing: 8) {
+                    HStack {
+                        Text(scenario.icon)
+                            .font(.system(size: 40))
 
-                        Text(scenario.getDescription(for: nativeLanguage))
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(scenario.getTitle(for: nativeLanguage))
+                                .font(.headline)
+
+                            Text(scenario.getDescription(for: nativeLanguage))
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+
+                        Spacer()
                     }
-
-                    Spacer()
+                    .padding()
+                    .background(Color(.systemBackground))
+                    .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
                 }
-                .padding()
-                .background(Color(.systemBackground))
-                .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
-            }
 
-            // Messages
-            ScrollView {
-                VStack(spacing: 12) {
-                    ForEach(messages) { message in
-                        MessageBubbleView(
-                            message: message,
-                            showTranslation: showTranslations
-                        )
+                // Messages
+                ScrollView {
+                    VStack(spacing: 0) {
+                        ForEach(messages) { message in
+                            MessageBubbleView(
+                                message: message,
+                                showTranslation: showTranslations
+                            )
+                            .padding(.bottom, 12)
+                        }
                     }
+                    .padding(.vertical, 8)
                 }
-                .padding()
             }
-            .background(Color(.systemGroupedBackground))
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -133,47 +138,83 @@ struct MessageBubbleView: View {
         message.speaker == .user
     }
 
-    private var bubbleColor: Color {
-        isUser ? Color.blue : Color(.systemGray5)
-    }
-
-    private var textColor: Color {
-        isUser ? .white : .primary
-    }
-
-    private var translationColor: Color {
-        isUser ? .white.opacity(0.8) : .secondary
-    }
-
     var body: some View {
-        HStack {
+        HStack(alignment: .bottom, spacing: 8) {
             if isUser {
                 Spacer(minLength: 60)
+            } else {
+                // 상대방 아이콘
+                Circle()
+                    .fill(Color.blue.opacity(0.2))
+                    .frame(width: 36, height: 36)
+                    .overlay(
+                        Image(systemName: "person.fill")
+                            .font(.system(size: 16))
+                            .foregroundColor(.blue)
+                    )
             }
 
             VStack(alignment: isUser ? .trailing : .leading, spacing: 4) {
-                // Main text
-                Text(message.text)
-                    .font(.body)
-                    .foregroundColor(textColor)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(bubbleColor)
-                    .cornerRadius(18)
+                // 스피커 라벨
+                Text(isUser ? speakerLabel.me : speakerLabel.partner)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal, 4)
 
-                // Translation
-                if showTranslation, let translation = message.translation {
-                    Text(translation)
-                        .font(.caption)
-                        .foregroundColor(isUser ? .secondary : .secondary)
-                        .padding(.horizontal, 4)
+                // 메시지 내용
+                VStack(alignment: isUser ? .trailing : .leading, spacing: 4) {
+                    // Main text
+                    Text(message.text)
+                        .font(.body)
+                        .foregroundColor(isUser ? .white : .primary)
+
+                    // Translation
+                    if showTranslation, let translation = message.translation {
+                        Text(translation)
+                            .font(.caption)
+                            .foregroundColor(isUser ? .white.opacity(0.85) : .secondary)
+                    }
                 }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+                .background(
+                    Group {
+                        if isUser {
+                            LinearGradient(
+                                gradient: Gradient(colors: [Color.blue, Color.blue.opacity(0.8)]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        } else {
+                            Color(.systemGray5)
+                        }
+                    }
+                )
+                .cornerRadius(18)
+                .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
             }
+            .frame(maxWidth: 280, alignment: isUser ? .trailing : .leading)
 
             if !isUser {
                 Spacer(minLength: 60)
+            } else {
+                // 내 아이콘
+                Circle()
+                    .fill(Color.green.opacity(0.2))
+                    .frame(width: 36, height: 36)
+                    .overlay(
+                        Image(systemName: "person.fill")
+                            .font(.system(size: 16))
+                            .foregroundColor(.green)
+                    )
             }
         }
+        .padding(.horizontal, 12)
+    }
+
+    private var speakerLabel: (me: String, partner: String) {
+        // 간단하게 영어로 고정 (또는 LocalizedText 사용 가능)
+        return (me: "Me", partner: "Partner")
     }
 }
 

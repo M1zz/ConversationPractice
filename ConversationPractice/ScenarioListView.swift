@@ -12,25 +12,29 @@ struct ScenarioListView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                ForEach(scenarios) { scenario in
-                    NavigationLink(destination: ConversationView(
-                        scenario: scenario,
-                        nativeLanguage: nativeLanguage,
-                        learningLanguage: learningLanguage
-                    )) {
-                        ScenarioCardWithPreview(
+        ZStack {
+            Color(.systemGroupedBackground)
+                .ignoresSafeArea()
+
+            ScrollView {
+                VStack(spacing: 16) {
+                    ForEach(scenarios) { scenario in
+                        NavigationLink(destination: ConversationView(
                             scenario: scenario,
-                            nativeLanguage: nativeLanguage
-                        )
+                            nativeLanguage: nativeLanguage,
+                            learningLanguage: learningLanguage
+                        )) {
+                            ScenarioCardWithPreview(
+                                scenario: scenario,
+                                nativeLanguage: nativeLanguage
+                            )
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
-                    .buttonStyle(PlainButtonStyle())
                 }
+                .padding()
             }
-            .padding()
         }
-        .background(Color(.systemGroupedBackground))
         .navigationTitle(category.getName(for: nativeLanguage))
         .navigationBarTitleDisplayMode(.large)
     }
@@ -104,9 +108,8 @@ struct ScenarioCardWithPreview: View {
             }
             .padding(.bottom)
         }
-        .background(Color(.systemBackground))
+        .background(Color(.secondarySystemGroupedBackground))
         .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
         .sheet(isPresented: $showingFullScript) {
             NavigationStack {
                 MessengerScriptView(

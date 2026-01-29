@@ -167,6 +167,14 @@ class ScenarioImporter {
     private static func cleanJSONString(_ input: String) -> String {
         var cleaned = input.trimmingCharacters(in: .whitespacesAndNewlines)
 
+        // 0. 스마트 따옴표를 일반 따옴표로 변환 (노션, 메모 앱 등에서 복사한 경우)
+        // " " → " (curly double quotes to straight quotes)
+        cleaned = cleaned.replacingOccurrences(of: "\u{201C}", with: "\"")  // "
+        cleaned = cleaned.replacingOccurrences(of: "\u{201D}", with: "\"")  // "
+        // ' ' → ' (curly single quotes to straight quotes)
+        cleaned = cleaned.replacingOccurrences(of: "\u{2018}", with: "'")   // '
+        cleaned = cleaned.replacingOccurrences(of: "\u{2019}", with: "'")
+
         // 1. 마크다운 코드 블록 제거 (```json ... ``` 또는 ``` ... ```)
         if cleaned.hasPrefix("```") {
             // 첫 번째 줄 제거

@@ -46,7 +46,7 @@ struct ScenarioCreationView: View {
                 // 대화 내용 섹션 (메인 포커스)
                 Section(header: Text(conversationLabel)) {
                     if conversationTurns.isEmpty {
-                        VStack(spacing: 12) {
+                        VStack(spacing: 16) {
                             Image(systemName: "bubble.left.and.bubble.right")
                                 .font(.system(size: 40))
                                 .foregroundColor(.secondary)
@@ -62,10 +62,10 @@ struct ScenarioCreationView: View {
                             .buttonStyle(.bordered)
                         }
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 20)
+                        .padding(.vertical, 32)
                     } else {
                         ForEach(Array(conversationTurns.enumerated()), id: \.element.id) { index, turn in
-                            VStack(spacing: 0) {
+                            VStack(spacing: 20) {
                                 TurnRow(
                                     turn: turn,
                                     index: index,
@@ -94,7 +94,7 @@ struct ScenarioCreationView: View {
                                     }
                                     .foregroundColor(.blue)
                                     .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 8)
+                                    .padding(.vertical, 12)
                                 }
                                 .buttonStyle(PlainButtonStyle())
                             }
@@ -124,7 +124,7 @@ struct ScenarioCreationView: View {
                         }
 
                         // 제목
-                        VStack(alignment: .leading, spacing: 4) {
+                        VStack(alignment: .leading, spacing: 6) {
                             Text(titleLabel)
                                 .font(.caption)
                                 .foregroundColor(.secondary)
@@ -135,7 +135,7 @@ struct ScenarioCreationView: View {
                         }
 
                         // 설명
-                        VStack(alignment: .leading, spacing: 4) {
+                        VStack(alignment: .leading, spacing: 6) {
                             Text(descriptionLabel)
                                 .font(.caption)
                                 .foregroundColor(.secondary)
@@ -590,7 +590,7 @@ struct TurnRow: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 16) {
             // 헤더
             HStack {
                 Image(systemName: turn.speaker == .user ? "person.fill" : "brain.head.profile")
@@ -612,7 +612,7 @@ struct TurnRow: View {
 
             // 옵션들을 수평 스크롤로 표시 (옵션 추가 버튼이 살짝 보이도록)
             ScrollView(.horizontal, showsIndicators: true) {
-                HStack(spacing: 12) {
+                HStack(spacing: 16) {
                     ForEach(Array(turn.options.enumerated()), id: \.element.id) { optionIndex, option in
                         OptionCard(
                             option: option,
@@ -657,7 +657,7 @@ struct TurnRow: View {
             }
             .frame(height: 220)
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 16)
     }
 
     private func addOption() {
@@ -731,7 +731,7 @@ struct OptionCard: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 16) {
             // 옵션 헤더
             HStack {
                 Text(optionLabel)
@@ -759,7 +759,7 @@ struct OptionCard: View {
             }
 
             // 모국어 텍스트
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text(nativeLanguageLabel)
                     .font(.caption2)
                     .foregroundColor(.secondary)
@@ -774,7 +774,7 @@ struct OptionCard: View {
             }
 
             // 학습 언어 텍스트
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text(learningLanguageLabel)
                     .font(.caption2)
                     .foregroundColor(.secondary)
@@ -788,7 +788,7 @@ struct OptionCard: View {
                     }
             }
         }
-        .padding()
+        .padding(16)
         .background(Color(.systemBackground))
         .cornerRadius(12)
         .overlay(

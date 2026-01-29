@@ -40,7 +40,7 @@ struct LearningLanguageSelectionView: View {
                             languageSettings.nativeLanguage = nativeLanguage
                             languageSettings.learningLanguage = language
                         }) {
-                            LanguageCard(language: language)
+                            LanguageCard(language: language, scenarioCount: 53)
                         }
                         .buttonStyle(PlainButtonStyle())
                     }

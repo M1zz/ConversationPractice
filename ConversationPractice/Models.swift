@@ -306,6 +306,222 @@ struct LocalizedText {
         default: return "Me"
         }
     }
+
+    var partner: String {
+        switch nativeLanguage {
+        case .korean: return "상대방"
+        case .english: return "Partner"
+        case .japanese: return "相手"
+        case .chinese: return "对方"
+        case .spanish: return "Compañero"
+        case .indonesian: return "Lawan bicara"
+        default: return "Partner"
+        }
+    }
+
+    var conversationComplete: String {
+        switch nativeLanguage {
+        case .korean: return "🎉 대화 완료!"
+        case .english: return "🎉 Conversation Complete!"
+        case .japanese: return "🎉 会話完了!"
+        case .chinese: return "🎉 对话完成!"
+        case .spanish: return "🎉 ¡Conversación completada!"
+        case .indonesian: return "🎉 Percakapan Selesai!"
+        default: return "🎉 Conversation Complete!"
+        }
+    }
+
+    var practiceAgain: String {
+        switch nativeLanguage {
+        case .korean: return "다시 연습하기"
+        case .english: return "Practice Again"
+        case .japanese: return "もう一度練習"
+        case .chinese: return "再练习一次"
+        case .spanish: return "Practicar de nuevo"
+        case .indonesian: return "Latihan Lagi"
+        default: return "Practice Again"
+        }
+    }
+
+    var displayModeNative: String {
+        switch nativeLanguage {
+        case .korean: return "모국어"
+        case .english: return "Native"
+        case .japanese: return "母国語"
+        case .chinese: return "母语"
+        case .spanish: return "Nativo"
+        case .indonesian: return "Bahasa Ibu"
+        default: return "Native"
+        }
+    }
+
+    var displayModeLearning: String {
+        switch nativeLanguage {
+        case .korean: return "외국어"
+        case .english: return "Learning"
+        case .japanese: return "学習言語"
+        case .chinese: return "学习语言"
+        case .spanish: return "Aprendizaje"
+        case .indonesian: return "Bahasa Belajar"
+        default: return "Learning"
+        }
+    }
+
+    var displayModeBoth: String {
+        switch nativeLanguage {
+        case .korean: return "모두"
+        case .english: return "Both"
+        case .japanese: return "両方"
+        case .chinese: return "两者"
+        case .spanish: return "Ambos"
+        case .indonesian: return "Keduanya"
+        default: return "Both"
+        }
+    }
+
+    var sayThisPhrase: String {
+        switch nativeLanguage {
+        case .korean: return "이 문장을 말하세요:"
+        case .english: return "Say this phrase:"
+        case .japanese: return "このフレーズを言ってください:"
+        case .chinese: return "请说这句话:"
+        case .spanish: return "Di esta frase:"
+        case .indonesian: return "Ucapkan kalimat ini:"
+        default: return "Say this phrase:"
+        }
+    }
+
+    var greatJob: String {
+        switch nativeLanguage {
+        case .korean: return "잘했습니다! ✓"
+        case .english: return "Great job! ✓"
+        case .japanese: return "よくできました! ✓"
+        case .chinese: return "做得好! ✓"
+        case .spanish: return "¡Bien hecho! ✓"
+        case .indonesian: return "Bagus sekali! ✓"
+        default: return "Great job! ✓"
+        }
+    }
+
+    var tryAgain: String {
+        switch nativeLanguage {
+        case .korean: return "다시 시도해보세요"
+        case .english: return "Try again"
+        case .japanese: return "もう一度試してください"
+        case .chinese: return "请再试一次"
+        case .spanish: return "Inténtalo de nuevo"
+        case .indonesian: return "Coba lagi"
+        default: return "Try again"
+        }
+    }
+
+    var settings: String {
+        switch nativeLanguage {
+        case .korean: return "설정"
+        case .english: return "Settings"
+        case .japanese: return "設定"
+        case .chinese: return "设置"
+        case .spanish: return "Configuración"
+        case .indonesian: return "Pengaturan"
+        default: return "Settings"
+        }
+    }
+
+    var nativeLanguageLabel: String {
+        switch nativeLanguage {
+        case .korean: return "모국어"
+        case .english: return "Native Language"
+        case .japanese: return "母国語"
+        case .chinese: return "母语"
+        case .spanish: return "Idioma nativo"
+        case .indonesian: return "Bahasa Ibu"
+        default: return "Native Language"
+        }
+    }
+
+    var learningLanguageLabel: String {
+        switch nativeLanguage {
+        case .korean: return "학습 언어"
+        case .english: return "Learning Language"
+        case .japanese: return "学習言語"
+        case .chinese: return "学习语言"
+        case .spanish: return "Idioma de aprendizaje"
+        case .indonesian: return "Bahasa Belajar"
+        default: return "Learning Language"
+        }
+    }
+
+    var resetSettings: String {
+        switch nativeLanguage {
+        case .korean: return "설정 초기화"
+        case .english: return "Reset Settings"
+        case .japanese: return "設定をリセット"
+        case .chinese: return "重置设置"
+        case .spanish: return "Restablecer configuración"
+        case .indonesian: return "Reset Pengaturan"
+        default: return "Reset Settings"
+        }
+    }
+
+    var done: String {
+        switch nativeLanguage {
+        case .korean: return "완료"
+        case .english: return "Done"
+        case .japanese: return "完了"
+        case .chinese: return "完成"
+        case .spanish: return "Listo"
+        case .indonesian: return "Selesai"
+        default: return "Done"
+        }
+    }
+
+    var appName: String {
+        switch nativeLanguage {
+        case .korean: return "스픽플로우"
+        case .english: return "SpeakFlow"
+        case .japanese: return "スピークフロー"
+        case .chinese: return "SpeakFlow"
+        case .spanish: return "SpeakFlow"
+        case .indonesian: return "SpeakFlow"
+        default: return "SpeakFlow"
+        }
+    }
+
+    var appSubtitle: String {
+        switch nativeLanguage {
+        case .korean: return "실제 상황에서의 다양한 답변에 대응하는 연습"
+        case .english: return "Practice responding to various answers in real situations"
+        case .japanese: return "実際の状況でさまざまな回答に対応する練習"
+        case .chinese: return "练习在真实情况下应对各种回答"
+        case .spanish: return "Practica respondiendo a varias respuestas en situaciones reales"
+        case .indonesian: return "Berlatih merespons berbagai jawaban dalam situasi nyata"
+        default: return "Practice responding to various answers in real situations"
+        }
+    }
+
+    var myScenarios: String {
+        switch nativeLanguage {
+        case .korean: return "내 시나리오"
+        case .english: return "My Scenarios"
+        case .japanese: return "マイシナリオ"
+        case .chinese: return "我的场景"
+        case .spanish: return "Mis escenarios"
+        case .indonesian: return "Skenario Saya"
+        default: return "My Scenarios"
+        }
+    }
+
+    var builtInScenarios: String {
+        switch nativeLanguage {
+        case .korean: return "상황별 시나리오"
+        case .english: return "Scenarios by Situation"
+        case .japanese: return "状況別シナリオ"
+        case .chinese: return "按情况分类的场景"
+        case .spanish: return "Escenarios por situación"
+        case .indonesian: return "Skenario Berdasarkan Situasi"
+        default: return "Scenarios by Situation"
+        }
+    }
 }
 
 // MARK: - 연습 모드 모델

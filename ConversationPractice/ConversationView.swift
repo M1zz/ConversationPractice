@@ -2,6 +2,18 @@ import SwiftUI
 import AVFoundation
 import Speech
 
+// MARK: - Constants
+private enum UIConstants {
+    static let buttonSize: CGFloat = 70
+    static let iconSize: CGFloat = 28
+    static let maxBubbleWidth: CGFloat = 280
+    static let profileIconSize: CGFloat = 36
+    static let minimumSideSpacing: CGFloat = 60
+    static let animationDuration: Double = 0.2
+    static let speechDelay: Double = 0.5
+    static let similarityThreshold: Double = 0.7
+}
+
 // 언어 표시 모드
 enum LanguageDisplayMode: String {
     case native = "native"       // 모국어만
@@ -30,6 +42,7 @@ struct ConversationView: View {
     @State private var isRecording = false
     @State private var recognizedText = ""
     @State private var recognitionStatus: RecognitionStatus = .idle
+    @State private var isWaitingForConfirmation = false  // 사용자 확인 대기 상태
     @StateObject private var speechRecognizer = SpeechRecognizer()
     @StateObject private var speechSynthesizer = SpeechSynthesizerWrapper()
 
@@ -50,7 +63,7 @@ struct ConversationView: View {
             // 대화 내용
             ScrollViewReader { proxy in
                 ScrollView {
-                    VStack(spacing: 16) {
+                    VStack(spacing: 0) {
                         // 시나리오 설명 (모국어로 표시)
                         VStack(spacing: 8) {
                             Text(scenario.icon)
@@ -63,6 +76,7 @@ struct ConversationView: View {
                                 .foregroundColor(.secondary)
                         }
                         .padding(.vertical, 20)
+                        .padding(.bottom, 8)
 
                         // 대화 기록
                         ForEach(Array(conversationHistory.enumerated()), id: \.element.id) { index, node in
@@ -77,16 +91,17 @@ struct ConversationView: View {
                                 }
                             )
                             .id(node.id)
+                            .padding(.bottom, 12)
                         }
 
                         // 대화 종료 메시지
                         if isConversationEnded {
                             VStack(spacing: 12) {
-                                Text(completionMessage)
+                                Text(localizedText.conversationComplete)
                                     .font(.headline)
 
                                 Button(action: resetConversation) {
-                                    Label(retryMessage, systemImage: "arrow.counterclockwise")
+                                    Label(localizedText.practiceAgain, systemImage: "arrow.counterclockwise")
                                         .padding()
                                         .background(Color.blue)
                                         .foregroundColor(.white)
@@ -96,8 +111,9 @@ struct ConversationView: View {
                             .padding(.top, 20)
                         }
                     }
-                    .padding()
+                    .padding(.vertical, 8)
                 }
+                .background(Color(.systemGroupedBackground))
                 .onChange(of: conversationHistory.count) { _ in
                     if let lastNode = conversationHistory.last {
                         withAnimation {
@@ -120,6 +136,7 @@ struct ConversationView: View {
                         isRecording: isRecording,
                         recognizedText: recognizedText,
                         recognitionStatus: recognitionStatus,
+                        isWaitingForConfirmation: isWaitingForConfirmation,
                         displayMode: displayMode,
                         localizedText: localizedText,
                         onRecordTap: toggleRecording
@@ -141,7 +158,7 @@ struct ConversationView: View {
                     Button(action: cycleDisplayMode) {
                         HStack(spacing: 4) {
                             Image(systemName: displayModeIcon)
-                            Text(displayModeLabel)
+                            Text(getDisplayModeLabel())
                                 .font(.caption)
                         }
                         .foregroundColor(.blue)
@@ -185,30 +202,6 @@ struct ConversationView: View {
 
     // MARK: - Localized Strings
 
-    private var completionMessage: String {
-        switch nativeLanguage {
-        case .korean: return "🎉 대화 완료!"
-        case .english: return "🎉 Conversation Complete!"
-        case .japanese: return "🎉 会話完了!"
-        case .chinese: return "🎉 对话完成!"
-        case .spanish: return "🎉 ¡Conversación completada!"
-        case .indonesian: return "🎉 Percakapan Selesai!"
-        default: return "🎉 Conversation Complete!"
-        }
-    }
-
-    private var retryMessage: String {
-        switch nativeLanguage {
-        case .korean: return "다시 연습하기"
-        case .english: return "Practice Again"
-        case .japanese: return "もう一度練習"
-        case .chinese: return "再练习一次"
-        case .spanish: return "Practicar de nuevo"
-        case .indonesian: return "Latihan Lagi"
-        default: return "Practice Again"
-        }
-    }
-
     private var displayModeIcon: String {
         switch displayMode {
         case .native: return "textformat.abc"
@@ -217,38 +210,11 @@ struct ConversationView: View {
         }
     }
 
-    private var displayModeLabel: String {
+    private func getDisplayModeLabel() -> String {
         switch displayMode {
-        case .native:
-            switch nativeLanguage {
-            case .korean: return "모국어"
-            case .english: return "Native"
-            case .japanese: return "母国語"
-            case .chinese: return "母语"
-            case .spanish: return "Nativo"
-            case .indonesian: return "Bahasa Ibu"
-            default: return "Native"
-            }
-        case .learning:
-            switch nativeLanguage {
-            case .korean: return "외국어"
-            case .english: return "Learning"
-            case .japanese: return "学習言語"
-            case .chinese: return "学习语言"
-            case .spanish: return "Aprendizaje"
-            case .indonesian: return "Bahasa Belajar"
-            default: return "Learning"
-            }
-        case .both:
-            switch nativeLanguage {
-            case .korean: return "모두"
-            case .english: return "Both"
-            case .japanese: return "両方"
-            case .chinese: return "两者"
-            case .spanish: return "Ambos"
-            case .indonesian: return "Keduanya"
-            default: return "Both"
-            }
+        case .native: return localizedText.displayModeNative
+        case .learning: return localizedText.displayModeLearning
+        case .both: return localizedText.displayModeBoth
         }
     }
 
@@ -268,6 +234,17 @@ struct ConversationView: View {
     private func toggleRecording() {
         print("🎤 [RECORDING] === toggleRecording 호출 ===")
         print("🎤 [RECORDING] isRecording: \(isRecording)")
+        print("🎤 [RECORDING] isWaitingForConfirmation: \(isWaitingForConfirmation)")
+
+        // 확인 대기 중이면 다음으로 진행
+        if isWaitingForConfirmation {
+            print("🎤 [RECORDING] 사용자 확인 → 다음으로 진행")
+            isWaitingForConfirmation = false
+            recognitionStatus = .idle
+            recognizedText = ""
+            proceedConversation()
+            return
+        }
 
         if isRecording {
             // 녹음 중지
@@ -285,14 +262,13 @@ struct ConversationView: View {
                 print("✅ [RECORDING] 일치!")
                 recognitionStatus = .success
             } else {
-                print("⚠️ [RECORDING] 불일치하지만 계속 진행")
+                print("⚠️ [RECORDING] 불일치")
                 recognitionStatus = .failed
             }
 
-            // 일치 여부와 관계없이 항상 다음으로 진행
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                proceedConversation()
-            }
+            // 사용자 확인 대기 상태로 전환
+            isWaitingForConfirmation = true
+            print("🎤 [RECORDING] 사용자 확인 대기 중...")
         } else {
             // 녹음 시작
             print("🎤 [RECORDING] 녹음 시작")
@@ -310,7 +286,7 @@ struct ConversationView: View {
                 // 실시간으로 일치 여부 확인
                 if isMatchingPhrase(recognized: text, target: targetPhrase) {
                     print("✅ [RECORDING] 실시간 일치 감지! 자동 중지")
-                    // 일치하면 자동으로 녹음 중지
+                    // 일치하면 자동으로 녹음 중지 (하지만 자동 진행은 안 함)
                     DispatchQueue.main.async {
                         if isRecording {
                             toggleRecording()
@@ -322,19 +298,31 @@ struct ConversationView: View {
         print("🎤 [RECORDING] === toggleRecording 완료 ===\n")
     }
 
+    // 구두점을 제거하고 텍스트를 정규화
+    private func normalizePunctuation(_ text: String) -> String {
+        return text.lowercased()
+            .replacingOccurrences(of: ",", with: "")   // 쉼표
+            .replacingOccurrences(of: ".", with: "")   // 온점
+            .replacingOccurrences(of: "?", with: "")   // 물음표
+            .replacingOccurrences(of: "!", with: "")   // 느낌표
+            .replacingOccurrences(of: ";", with: "")   // 세미콜론
+            .replacingOccurrences(of: ":", with: "")   // 콜론
+            .replacingOccurrences(of: "…", with: "")   // 말줄임표
+            .replacingOccurrences(of: "...", with: "") // 점 3개
+            .replacingOccurrences(of: "—", with: "")   // em dash
+            .replacingOccurrences(of: "–", with: "")   // en dash
+            .replacingOccurrences(of: "-", with: "")   // 하이픈
+            .replacingOccurrences(of: "'", with: "")   // 작은따옴표
+            .replacingOccurrences(of: "\"", with: "")  // 큰따옴표
+            .replacingOccurrences(of: "(", with: "")   // 괄호
+            .replacingOccurrences(of: ")", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
     private func isMatchingPhrase(recognized: String, target: String) -> Bool {
         // 간단한 유사도 검사 (정규화 후 비교)
-        let normalizedRecognized = recognized.lowercased()
-            .replacingOccurrences(of: "?", with: "")
-            .replacingOccurrences(of: "!", with: "")
-            .replacingOccurrences(of: ".", with: "")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-
-        let normalizedTarget = target.lowercased()
-            .replacingOccurrences(of: "?", with: "")
-            .replacingOccurrences(of: "!", with: "")
-            .replacingOccurrences(of: ".", with: "")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let normalizedRecognized = normalizePunctuation(recognized)
+        let normalizedTarget = normalizePunctuation(target)
 
         // 완전 일치 또는 포함 관계 확인
         if normalizedRecognized == normalizedTarget {
@@ -452,6 +440,7 @@ struct ConversationView: View {
         isConversationEnded = false
         recognizedText = ""
         recognitionStatus = .idle
+        isWaitingForConfirmation = false
     }
 
     private func speak(text: String) {
@@ -490,6 +479,7 @@ struct VoiceInputSection: View {
     let isRecording: Bool
     let recognizedText: String
     let recognitionStatus: ConversationView.RecognitionStatus
+    let isWaitingForConfirmation: Bool  // 확인 대기 상태
     let displayMode: LanguageDisplayMode
     let localizedText: LocalizedText
     let onRecordTap: () -> Void
@@ -498,7 +488,7 @@ struct VoiceInputSection: View {
         VStack(spacing: 16) {
             // 말해야 할 문장 표시
             VStack(spacing: 8) {
-                Text(sayThisLabel)
+                Text(localizedText.sayThisPhrase)
                     .font(.caption)
                     .foregroundColor(.secondary)
 
@@ -544,10 +534,10 @@ struct VoiceInputSection: View {
             Button(action: onRecordTap) {
                 ZStack {
                     Circle()
-                        .fill(isRecording ? Color.red : Color.blue)
+                        .fill(buttonColor)
                         .frame(width: 70, height: 70)
 
-                    Image(systemName: isRecording ? "stop.fill" : "mic.fill")
+                    Image(systemName: buttonIcon)
                         .font(.system(size: 28))
                         .foregroundColor(.white)
                 }
@@ -561,44 +551,48 @@ struct VoiceInputSection: View {
         }
     }
 
-    private var sayThisLabel: String {
-        switch localizedText.nativeLanguage {
-        case .korean: return "이 문장을 말하세요:"
-        case .english: return "Say this phrase:"
-        case .japanese: return "このフレーズを言ってください:"
-        case .chinese: return "请说这句话:"
-        case .spanish: return "Di esta frase:"
-        case .indonesian: return "Ucapkan kalimat ini:"
-        default: return "Say this phrase:"
+    private var buttonColor: Color {
+        if isRecording {
+            return .red
+        } else if isWaitingForConfirmation {
+            return .green
+        } else {
+            return .blue
+        }
+    }
+
+    private var buttonIcon: String {
+        if isRecording {
+            return "stop.fill"
+        } else if isWaitingForConfirmation {
+            return "checkmark.circle.fill"
+        } else {
+            return "mic.fill"
         }
     }
 
     private var statusMessage: String {
+        if isWaitingForConfirmation {
+            switch localizedText.nativeLanguage {
+            case .korean: return "탭하여 계속하기"
+            case .english: return "Tap to continue"
+            case .japanese: return "タップして続ける"
+            case .chinese: return "点击继续"
+            case .spanish: return "Toca para continuar"
+            case .indonesian: return "Ketuk untuk melanjutkan"
+            default: return "Tap to continue"
+            }
+        }
+
         switch recognitionStatus {
         case .idle:
             return localizedText.tapToSpeak
         case .listening:
             return localizedText.speaking
         case .success:
-            switch localizedText.nativeLanguage {
-            case .korean: return "잘했습니다! ✓"
-            case .english: return "Great job! ✓"
-            case .japanese: return "よくできました! ✓"
-            case .chinese: return "做得好! ✓"
-            case .spanish: return "¡Bien hecho! ✓"
-            case .indonesian: return "Bagus sekali! ✓"
-            default: return "Great job! ✓"
-            }
+            return localizedText.greatJob
         case .failed:
-            switch localizedText.nativeLanguage {
-            case .korean: return "다시 시도해보세요"
-            case .english: return "Try again"
-            case .japanese: return "もう一度試してください"
-            case .chinese: return "请再试一次"
-            case .spanish: return "Inténtalo de nuevo"
-            case .indonesian: return "Coba lagi"
-            default: return "Try again"
-            }
+            return localizedText.tryAgain
         }
     }
 
@@ -639,17 +633,30 @@ struct MessageBubble: View {
     }
 
     var body: some View {
-        HStack {
-            if isUser { Spacer() }
+        HStack(alignment: .bottom, spacing: 8) {
+            if isUser {
+                Spacer(minLength: 60)
+            } else {
+                // 상대방 아이콘
+                Circle()
+                    .fill(Color.blue.opacity(0.2))
+                    .frame(width: 36, height: 36)
+                    .overlay(
+                        Image(systemName: "person.fill")
+                            .font(.system(size: 16))
+                            .foregroundColor(.blue)
+                    )
+            }
 
             VStack(alignment: isUser ? .trailing : .leading, spacing: 4) {
                 // 스피커 라벨
-                Text(isUser ? localizedText.me : partnerLabel)
+                Text(isUser ? localizedText.me : localizedText.partner)
                     .font(.caption2)
                     .foregroundColor(.secondary)
+                    .padding(.horizontal, 4)
 
                 // 메시지 내용
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: isUser ? .trailing : .leading, spacing: 4) {
                     // 학습 언어 텍스트 (displayMode가 learning 또는 both일 때)
                     if displayMode == .learning || displayMode == .both {
                         Text(node.text)
@@ -662,32 +669,48 @@ struct MessageBubble: View {
                         Text(translation)
                             .font(displayMode == .native ? .body : .caption)
                             .fontWeight(displayMode == .native ? .medium : .regular)
-                            .foregroundColor(isUser ? .white.opacity(0.8) : .secondary)
+                            .foregroundColor(isUser ? .white.opacity(0.85) : .secondary)
                     }
                 }
-                .padding(12)
-                .background(isUser ? Color.blue : Color(.systemGray5))
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+                .background(
+                    Group {
+                        if isUser {
+                            LinearGradient(
+                                gradient: Gradient(colors: [Color.blue, Color.blue.opacity(0.8)]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        } else {
+                            Color(.systemGray5)
+                        }
+                    }
+                )
                 .foregroundColor(isUser ? .white : .primary)
-                .cornerRadius(16)
+                .cornerRadius(18)
+                .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
                 .onTapGesture {
                     onTap()
                 }
             }
+            .frame(maxWidth: 280, alignment: isUser ? .trailing : .leading)
 
-            if !isUser { Spacer() }
+            if !isUser {
+                Spacer(minLength: 60)
+            } else {
+                // 내 아이콘
+                Circle()
+                    .fill(Color.green.opacity(0.2))
+                    .frame(width: 36, height: 36)
+                    .overlay(
+                        Image(systemName: "person.fill")
+                            .font(.system(size: 16))
+                            .foregroundColor(.green)
+                    )
+            }
         }
-    }
-
-    private var partnerLabel: String {
-        switch localizedText.nativeLanguage {
-        case .korean: return "상대방"
-        case .english: return "Partner"
-        case .japanese: return "相手"
-        case .chinese: return "对方"
-        case .spanish: return "Compañero"
-        case .indonesian: return "Lawan bicara"
-        default: return "Partner"
-        }
+        .padding(.horizontal, 12)
     }
 }
 

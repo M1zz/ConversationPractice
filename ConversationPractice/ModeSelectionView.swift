@@ -10,22 +10,26 @@ struct ModeSelectionView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                // 헤더
-                VStack(spacing: 8) {
-                    Text(learningLanguage.flag)
-                        .font(.system(size: 60))
+        ZStack {
+            Color(.systemGroupedBackground)
+                .ignoresSafeArea()
 
-                    Text("\(learningLanguage.displayName) \(localizedText.practice)")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
+            ScrollView {
+                VStack(spacing: 24) {
+                    // 헤더
+                    VStack(spacing: 8) {
+                        Text(learningLanguage.flag)
+                            .font(.system(size: 60))
 
-                    Text(localizedText.selectMode)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                .padding(.top, 20)
+                        Text("\(learningLanguage.displayName) \(localizedText.practice)")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+
+                        Text(localizedText.selectMode)
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.top, 20)
 
                 // 모드 카드들
                 ForEach(PracticeMode.allCases) { mode in
@@ -34,10 +38,10 @@ struct ModeSelectionView: View {
                     }
                     .buttonStyle(PlainButtonStyle())
                 }
+                }
+                .padding()
             }
-            .padding()
         }
-        .background(Color(.systemGroupedBackground))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {

@@ -42,15 +42,22 @@ struct LanguageSelectionView: View {
 // MARK: - 언어 카드
 struct LanguageCard: View {
     let language: Language
+    var scenarioCount: Int? = nil
 
     var body: some View {
         VStack(spacing: 12) {
             Text(language.flag)
                 .font(.system(size: 50))
 
-            Text(language.displayName)
-                .font(.headline)
-                .foregroundColor(.primary)
+            if let count = scenarioCount {
+                Text("\(language.displayName) (\(count))")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+            } else {
+                Text(language.displayName)
+                    .font(.headline)
+                    .foregroundColor(.primary)
+            }
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 24)
