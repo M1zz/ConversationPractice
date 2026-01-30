@@ -275,21 +275,7 @@ struct ScenarioCreationView: View {
     }
 
     private func saveScenario() {
-        let turns = conversationTurns.map { turnData in
-            // 모든 옵션을 ConversationTurn.TextOption으로 변환
-            let textOptions = turnData.options.map { option in
-                ConversationTurn.TextOption(
-                    nativeText: option.nativeText,
-                    learningText: option.learningText
-                )
-            }
-
-            return ConversationTurn(
-                id: turnData.id,
-                speaker: turnData.speaker,
-                textOptions: textOptions
-            )
-        }
+        let turns = convertTurnsToConversationTurns(conversationTurns)
 
         let scenario = CustomScenario(
             nativeLanguage: nativeLanguage,
@@ -305,6 +291,39 @@ struct ScenarioCreationView: View {
         clearDraft()  // 저장 성공 시 draft 삭제
         clearState()  // 상태 초기화
         dismiss()
+    }
+
+    // TurnData 배열을 ConversationTurn 배열로 변환 (분기 포함)
+    private func convertTurnsToConversationTurns(_ turnDataList: [TurnData]) -> [ConversationTurn] {
+        return turnDataList.map { turnData in
+            // 모든 옵션을 ConversationTurn.TextOption으로 변환
+            let textOptions = turnData.options.map { option in
+                ConversationTurn.TextOption(
+                    nativeText: option.nativeText,
+                    learningText: option.learningText
+                )
+            }
+
+            // 분기를 ConversationTurn.BranchTurn으로 변환 (재귀적)
+            var branchTurns: [ConversationTurn.BranchTurn]? = nil
+            if !turnData.branches.isEmpty {
+                branchTurns = turnData.branches.map { branch in
+                    ConversationTurn.BranchTurn(
+                        id: branch.id,
+                        label: branch.label,
+                        optionIndex: branch.optionIndex,
+                        childTurns: convertTurnsToConversationTurns(branch.childTurns)
+                    )
+                }
+            }
+
+            return ConversationTurn(
+                id: turnData.id,
+                speaker: turnData.speaker,
+                textOptions: textOptions,
+                branches: branchTurns
+            )
+        }
     }
 
     // MARK: - Localized Labels
@@ -526,16 +545,33 @@ struct TurnOption: Identifiable, Codable {
     }
 }
 
+// MARK: - Branch Path (분기 경로)
+struct BranchPath: Identifiable, Codable {
+    let id: String
+    var label: String                      // 분기 라벨 (예: "경로 A", "커피 주문")
+    var optionIndex: Int                   // 어떤 옵션에서 분기하는지
+    var childTurns: [TurnData]             // 이 분기의 후속 대화 (재귀적)
+
+    init(id: String = UUID().uuidString, label: String = "", optionIndex: Int = 0, childTurns: [TurnData] = []) {
+        self.id = id
+        self.label = label
+        self.optionIndex = optionIndex
+        self.childTurns = childTurns
+    }
+}
+
 // MARK: - Turn Data
 struct TurnData: Identifiable, Codable {
     let id: String
     let speaker: ConversationTurn.TurnSpeaker
     var options: [TurnOption]
+    var branches: [BranchPath]             // 분기 경로들
 
-    init(id: String = UUID().uuidString, speaker: ConversationTurn.TurnSpeaker, options: [TurnOption] = []) {
+    init(id: String = UUID().uuidString, speaker: ConversationTurn.TurnSpeaker, options: [TurnOption] = [], branches: [BranchPath] = []) {
         self.id = id
         self.speaker = speaker
         self.options = options.isEmpty ? [TurnOption()] : options
+        self.branches = branches
     }
 
     // 기존 코드 호환성을 위한 computed properties
@@ -560,14 +596,44 @@ struct TurnData: Identifiable, Codable {
             }
         }
     }
+
+    // 분기가 있는지 확인
+    var hasBranches: Bool {
+        !branches.isEmpty
+    }
 }
 
 // MARK: - Scenario Draft
 struct ScenarioDraft: Codable {
+    static let currentVersion = 2  // 분기 지원 버전
+
+    let version: Int
     let title: String
     let description: String
     let icon: String
     let turns: [TurnData]
+
+    init(title: String, description: String, icon: String, turns: [TurnData]) {
+        self.version = Self.currentVersion
+        self.title = title
+        self.description = description
+        self.icon = icon
+        self.turns = turns
+    }
+
+    // 하위 호환성을 위한 디코딩
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.version = try container.decodeIfPresent(Int.self, forKey: .version) ?? 1
+        self.title = try container.decode(String.self, forKey: .title)
+        self.description = try container.decode(String.self, forKey: .description)
+        self.icon = try container.decode(String.self, forKey: .icon)
+        self.turns = try container.decode([TurnData].self, forKey: .turns)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case version, title, description, icon, turns
+    }
 }
 
 // MARK: - Turn Row
@@ -576,15 +642,19 @@ struct TurnRow: View {
     let index: Int
     let nativeLanguage: Language
     let learningLanguage: Language
+    let depth: Int  // 분기 깊이
     let onUpdate: (TurnData) -> Void
     let onDelete: () -> Void
 
+    @State private var selectedBranchIndex: Int = 0
+
     init(turn: TurnData, index: Int, nativeLanguage: Language, learningLanguage: Language,
-         onUpdate: @escaping (TurnData) -> Void, onDelete: @escaping () -> Void) {
+         depth: Int = 0, onUpdate: @escaping (TurnData) -> Void, onDelete: @escaping () -> Void) {
         self.turn = turn
         self.index = index
         self.nativeLanguage = nativeLanguage
         self.learningLanguage = learningLanguage
+        self.depth = depth
         self.onUpdate = onUpdate
         self.onDelete = onDelete
     }
@@ -593,6 +663,15 @@ struct TurnRow: View {
         VStack(alignment: .leading, spacing: 16) {
             // 헤더
             HStack {
+                // 깊이 표시 (분기 내부일 때)
+                if depth > 0 {
+                    ForEach(0..<depth, id: \.self) { _ in
+                        Rectangle()
+                            .fill(Color.orange.opacity(0.3))
+                            .frame(width: 3)
+                    }
+                }
+
                 Image(systemName: turn.speaker == .user ? "person.fill" : "brain.head.profile")
                     .foregroundColor(turn.speaker == .user ? .blue : .green)
                 Text("\(index + 1). \(speakerLabel)")
@@ -619,6 +698,7 @@ struct TurnRow: View {
                             optionIndex: optionIndex,
                             nativeLanguage: nativeLanguage,
                             learningLanguage: learningLanguage,
+                            hasBranch: turn.branches.contains(where: { $0.optionIndex == optionIndex }),
                             onUpdate: { updatedOption in
                                 var updatedTurn = turn
                                 if optionIndex < updatedTurn.options.count {
@@ -630,6 +710,14 @@ struct TurnRow: View {
                                 var updatedTurn = turn
                                 if updatedTurn.options.count > 1 {
                                     updatedTurn.options.remove(at: optionIndex)
+                                    // 분기도 함께 삭제
+                                    updatedTurn.branches.removeAll(where: { $0.optionIndex == optionIndex })
+                                    // optionIndex 재조정
+                                    for i in 0..<updatedTurn.branches.count {
+                                        if updatedTurn.branches[i].optionIndex > optionIndex {
+                                            updatedTurn.branches[i].optionIndex -= 1
+                                        }
+                                    }
                                     onUpdate(updatedTurn)
                                 }
                             }
@@ -656,14 +744,114 @@ struct TurnRow: View {
                 .padding(.trailing, 40)  // 오른쪽에 여유 공간을 두어 추가 버튼이 살짝 보이도록
             }
             .frame(height: 220)
+
+            // 분기 추가 버튼 (옵션이 2개 이상일 때만 표시)
+            if turn.options.count >= 2 && turn.branches.isEmpty {
+                Button(action: addBranches) {
+                    HStack {
+                        Image(systemName: "arrow.triangle.branch")
+                        Text(addBranchLabel)
+                            .font(.caption)
+                    }
+                    .foregroundColor(.orange)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color.orange.opacity(0.1))
+                    .cornerRadius(8)
+                }
+            }
+
+            // 분기 탭과 하위 대화 표시
+            if !turn.branches.isEmpty {
+                BranchPathSelector(
+                    branches: Binding(
+                        get: { turn.branches },
+                        set: { newBranches in
+                            var updatedTurn = turn
+                            updatedTurn.branches = newBranches
+                            onUpdate(updatedTurn)
+                        }
+                    ),
+                    selectedIndex: $selectedBranchIndex,
+                    options: turn.options,
+                    nativeLanguage: nativeLanguage,
+                    onAddBranch: {
+                        // 아직 분기가 없는 첫 번째 옵션에 분기 추가
+                        let usedIndices = Set(turn.branches.map { $0.optionIndex })
+                        if let newIndex = (0..<turn.options.count).first(where: { !usedIndices.contains($0) }) {
+                            var updatedTurn = turn
+                            let newBranch = BranchPath(
+                                label: getBranchLabel(for: newIndex),
+                                optionIndex: newIndex,
+                                childTurns: []
+                            )
+                            updatedTurn.branches.append(newBranch)
+                            onUpdate(updatedTurn)
+                        }
+                    },
+                    onDeleteBranch: { branchIndex in
+                        var updatedTurn = turn
+                        updatedTurn.branches.remove(at: branchIndex)
+                        onUpdate(updatedTurn)
+                        if selectedBranchIndex >= updatedTurn.branches.count {
+                            selectedBranchIndex = max(0, updatedTurn.branches.count - 1)
+                        }
+                    }
+                )
+
+                // 선택된 분기의 하위 대화 표시
+                if selectedBranchIndex < turn.branches.count {
+                    BranchEditorView(
+                        branch: Binding(
+                            get: { turn.branches[selectedBranchIndex] },
+                            set: { newBranch in
+                                var updatedTurn = turn
+                                updatedTurn.branches[selectedBranchIndex] = newBranch
+                                onUpdate(updatedTurn)
+                            }
+                        ),
+                        nativeLanguage: nativeLanguage,
+                        learningLanguage: learningLanguage,
+                        depth: depth + 1
+                    )
+                }
+            }
         }
         .padding(.vertical, 16)
+        .padding(.leading, CGFloat(depth) * 16)  // 깊이에 따른 들여쓰기
     }
 
     private func addOption() {
         var updatedTurn = turn
         updatedTurn.options.append(TurnOption())
         onUpdate(updatedTurn)
+    }
+
+    private func addBranches() {
+        var updatedTurn = turn
+        // 각 옵션에 대해 분기 생성
+        for (index, _) in turn.options.enumerated() {
+            let branch = BranchPath(
+                label: getBranchLabel(for: index),
+                optionIndex: index,
+                childTurns: []
+            )
+            updatedTurn.branches.append(branch)
+        }
+        onUpdate(updatedTurn)
+    }
+
+    private func getBranchLabel(for index: Int) -> String {
+        let labels: [String]
+        switch nativeLanguage {
+        case .korean: labels = ["경로 A", "경로 B", "경로 C", "경로 D", "경로 E"]
+        case .japanese: labels = ["ルート A", "ルート B", "ルート C", "ルート D", "ルート E"]
+        case .chinese: labels = ["路径 A", "路径 B", "路径 C", "路径 D", "路径 E"]
+        case .spanish: labels = ["Ruta A", "Ruta B", "Ruta C", "Ruta D", "Ruta E"]
+        case .indonesian: labels = ["Jalur A", "Jalur B", "Jalur C", "Jalur D", "Jalur E"]
+        default: labels = ["Path A", "Path B", "Path C", "Path D", "Path E"]
+        }
+        return index < labels.count ? labels[index] : "Path \(index + 1)"
     }
 
     private var speakerLabel: String {
@@ -701,6 +889,267 @@ struct TurnRow: View {
         default: return "Add Option"
         }
     }
+
+    private var addBranchLabel: String {
+        switch nativeLanguage {
+        case .korean: return "분기 추가 (옵션별 다른 대화)"
+        case .english: return "Add Branch (different dialog per option)"
+        case .japanese: return "分岐追加（オプション別の会話）"
+        case .chinese: return "添加分支（每个选项不同的对话）"
+        case .spanish: return "Agregar rama (diálogo diferente por opción)"
+        case .indonesian: return "Tambah cabang (dialog berbeda per opsi)"
+        default: return "Add Branch (different dialog per option)"
+        }
+    }
+}
+
+// MARK: - Branch Path Selector
+struct BranchPathSelector: View {
+    @Binding var branches: [BranchPath]
+    @Binding var selectedIndex: Int
+    let options: [TurnOption]
+    let nativeLanguage: Language
+    let onAddBranch: () -> Void
+    let onDeleteBranch: (Int) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(branchesLabel)
+                .font(.caption)
+                .foregroundColor(.secondary)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(Array(branches.enumerated()), id: \.element.id) { index, branch in
+                        BranchTab(
+                            label: branch.label,
+                            optionPreview: getOptionPreview(for: branch.optionIndex),
+                            isSelected: selectedIndex == index,
+                            onSelect: { selectedIndex = index },
+                            onDelete: { onDeleteBranch(index) }
+                        )
+                    }
+
+                    // 분기 추가 버튼 (모든 옵션에 분기가 있지 않을 때만)
+                    if branches.count < options.count {
+                        Button(action: onAddBranch) {
+                            Image(systemName: "plus.circle")
+                                .font(.title2)
+                                .foregroundColor(.orange)
+                        }
+                        .padding(.horizontal, 8)
+                    }
+                }
+                .padding(.vertical, 4)
+            }
+        }
+        .padding(.vertical, 8)
+        .padding(.horizontal, 12)
+        .background(Color.orange.opacity(0.05))
+        .cornerRadius(8)
+    }
+
+    private func getOptionPreview(for index: Int) -> String {
+        guard index < options.count else { return "" }
+        let text = options[index].nativeText
+        return text.count > 15 ? String(text.prefix(15)) + "..." : text
+    }
+
+    private var branchesLabel: String {
+        switch nativeLanguage {
+        case .korean: return "분기 경로"
+        case .english: return "Branch Paths"
+        case .japanese: return "分岐パス"
+        case .chinese: return "分支路径"
+        case .spanish: return "Rutas de rama"
+        case .indonesian: return "Jalur Cabang"
+        default: return "Branch Paths"
+        }
+    }
+}
+
+// MARK: - Branch Tab
+struct BranchTab: View {
+    let label: String
+    let optionPreview: String
+    let isSelected: Bool
+    let onSelect: () -> Void
+    let onDelete: () -> Void
+
+    var body: some View {
+        Button(action: onSelect) {
+            HStack(spacing: 4) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(label)
+                        .font(.caption)
+                        .fontWeight(isSelected ? .bold : .regular)
+                    if !optionPreview.isEmpty {
+                        Text(optionPreview)
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                }
+
+                if isSelected {
+                    Button(action: onDelete) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.caption)
+                            .foregroundColor(.red.opacity(0.7))
+                    }
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(isSelected ? Color.orange.opacity(0.2) : Color(.systemGray6))
+            .foregroundColor(isSelected ? .orange : .primary)
+            .cornerRadius(8)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(isSelected ? Color.orange : Color.clear, lineWidth: 2)
+            )
+        }
+    }
+}
+
+// MARK: - Branch Editor View
+struct BranchEditorView: View {
+    @Binding var branch: BranchPath
+    let nativeLanguage: Language
+    let learningLanguage: Language
+    let depth: Int
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            // 분기 라벨 편집
+            HStack {
+                Image(systemName: "arrow.triangle.branch")
+                    .foregroundColor(.orange)
+                TextField(branchLabelPlaceholder, text: $branch.label)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .font(.subheadline)
+            }
+
+            // 하위 대화 목록
+            if branch.childTurns.isEmpty {
+                VStack(spacing: 12) {
+                    Text(noChildTurnsLabel)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+
+                    Button(action: addChildTurn) {
+                        HStack {
+                            Image(systemName: "plus.circle")
+                            Text(addTurnLabel)
+                        }
+                        .font(.caption)
+                        .foregroundColor(.blue)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color(.systemGray6))
+                .cornerRadius(8)
+            } else {
+                ForEach(Array(branch.childTurns.enumerated()), id: \.element.id) { index, childTurn in
+                    VStack(spacing: 8) {
+                        TurnRow(
+                            turn: childTurn,
+                            index: index,
+                            nativeLanguage: nativeLanguage,
+                            learningLanguage: learningLanguage,
+                            depth: depth,
+                            onUpdate: { updatedTurn in
+                                branch.childTurns[index] = updatedTurn
+                            },
+                            onDelete: {
+                                branch.childTurns.remove(at: index)
+                            }
+                        )
+
+                        // 다음 턴 추가 버튼
+                        Button(action: {
+                            insertChildTurnAfter(index: index)
+                        }) {
+                            HStack {
+                                Image(systemName: "plus.circle")
+                                Text(addTurnLabel)
+                                    .font(.caption)
+                            }
+                            .foregroundColor(.blue)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 8)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                }
+            }
+        }
+        .padding()
+        .background(Color.orange.opacity(0.03))
+        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.orange.opacity(0.2), lineWidth: 1)
+        )
+    }
+
+    private func addChildTurn() {
+        let speaker: ConversationTurn.TurnSpeaker = branch.childTurns.isEmpty ? .ai :
+            (branch.childTurns.last?.speaker == .user ? .ai : .user)
+
+        branch.childTurns.append(TurnData(
+            speaker: speaker,
+            options: [TurnOption()]
+        ))
+    }
+
+    private func insertChildTurnAfter(index: Int) {
+        let currentSpeaker = branch.childTurns[index].speaker
+        let nextSpeaker: ConversationTurn.TurnSpeaker = currentSpeaker == .user ? .ai : .user
+
+        let newTurn = TurnData(
+            speaker: nextSpeaker,
+            options: [TurnOption()]
+        )
+
+        branch.childTurns.insert(newTurn, at: index + 1)
+    }
+
+    private var branchLabelPlaceholder: String {
+        switch nativeLanguage {
+        case .korean: return "분기 이름 (예: 커피 주문)"
+        case .english: return "Branch name (e.g., Order coffee)"
+        case .japanese: return "分岐名（例：コーヒー注文）"
+        case .chinese: return "分支名称（例如：点咖啡）"
+        case .spanish: return "Nombre de rama (ej: Pedir café)"
+        case .indonesian: return "Nama cabang (cth: Pesan kopi)"
+        default: return "Branch name (e.g., Order coffee)"
+        }
+    }
+
+    private var noChildTurnsLabel: String {
+        switch nativeLanguage {
+        case .korean: return "이 경로에 대화가 없습니다"
+        case .english: return "No conversation in this path"
+        case .japanese: return "このパスに会話がありません"
+        case .chinese: return "此路径没有对话"
+        case .spanish: return "Sin conversación en esta ruta"
+        case .indonesian: return "Tidak ada percakapan di jalur ini"
+        default: return "No conversation in this path"
+        }
+    }
+
+    private var addTurnLabel: String {
+        switch nativeLanguage {
+        case .korean: return "대화 추가"
+        case .english: return "Add Turn"
+        case .japanese: return "会話を追加"
+        case .chinese: return "添加对话"
+        case .spanish: return "Agregar turno"
+        case .indonesian: return "Tambah Giliran"
+        default: return "Add Turn"
+        }
+    }
 }
 
 // MARK: - Option Card
@@ -709,6 +1158,7 @@ struct OptionCard: View {
     let optionIndex: Int
     let nativeLanguage: Language
     let learningLanguage: Language
+    let hasBranch: Bool  // 이 옵션에 분기가 있는지
     let onUpdate: (TurnOption) -> Void
     let onDelete: () -> Void
 
@@ -719,11 +1169,12 @@ struct OptionCard: View {
     @State private var userEditedTranslation = false
 
     init(option: TurnOption, optionIndex: Int, nativeLanguage: Language, learningLanguage: Language,
-         onUpdate: @escaping (TurnOption) -> Void, onDelete: @escaping () -> Void) {
+         hasBranch: Bool = false, onUpdate: @escaping (TurnOption) -> Void, onDelete: @escaping () -> Void) {
         self.option = option
         self.optionIndex = optionIndex
         self.nativeLanguage = nativeLanguage
         self.learningLanguage = learningLanguage
+        self.hasBranch = hasBranch
         self.onUpdate = onUpdate
         self.onDelete = onDelete
         self._nativeText = State(initialValue: option.nativeText)
@@ -737,6 +1188,13 @@ struct OptionCard: View {
                 Text(optionLabel)
                     .font(.caption)
                     .foregroundColor(.secondary)
+
+                // 분기 표시
+                if hasBranch {
+                    Image(systemName: "arrow.triangle.branch")
+                        .font(.caption)
+                        .foregroundColor(.orange)
+                }
 
                 Spacer()
 

@@ -38,6 +38,10 @@ struct ConversationView: View {
     @State private var displayMode: LanguageDisplayMode = .both  // 기본값: 둘 다 표시
     @State private var showingScriptViewer = false
 
+    // 분기 선택 관련
+    @State private var showBranchSelector = false
+    @State private var availableBranches: [ConversationNode] = []
+
     // 음성 관련
     @State private var isRecording = false
     @State private var recognizedText = ""
@@ -61,63 +65,68 @@ struct ConversationView: View {
     var body: some View {
         VStack(spacing: 0) {
             // 대화 내용
-            ScrollViewReader { proxy in
-                ScrollView {
-                    VStack(spacing: 0) {
-                        // 시나리오 설명 (모국어로 표시)
-                        VStack(spacing: 8) {
-                            Text(scenario.icon)
-                                .font(.system(size: 50))
-                            Text(scenario.getTitle(for: nativeLanguage))
-                                .font(.title2)
-                                .fontWeight(.bold)
-                            Text(scenario.getDescription(for: nativeLanguage))
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        .padding(.vertical, 20)
-                        .padding(.bottom, 8)
+            ZStack {
+                // 전체 배경
+                Color(.systemGroupedBackground)
+                    .ignoresSafeArea()
 
-                        // 대화 기록
-                        ForEach(Array(conversationHistory.enumerated()), id: \.element.id) { index, node in
-                            MessageBubble(
-                                node: node,
-                                displayMode: displayMode,
-                                nativeLanguage: nativeLanguage,
-                                learningLanguage: learningLanguage,
-                                localizedText: localizedText,
-                                onTap: {
-                                    speak(text: node.text)
-                                }
-                            )
-                            .id(node.id)
-                            .padding(.bottom, 12)
-                        }
-
-                        // 대화 종료 메시지
-                        if isConversationEnded {
-                            VStack(spacing: 12) {
-                                Text(localizedText.conversationComplete)
-                                    .font(.headline)
-
-                                Button(action: resetConversation) {
-                                    Label(localizedText.practiceAgain, systemImage: "arrow.counterclockwise")
-                                        .padding()
-                                        .background(Color.blue)
-                                        .foregroundColor(.white)
-                                        .cornerRadius(10)
-                                }
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        VStack(spacing: 0) {
+                            // 시나리오 설명 (모국어로 표시)
+                            VStack(spacing: 8) {
+                                Text(scenario.icon)
+                                    .font(.system(size: 50))
+                                Text(scenario.getTitle(for: nativeLanguage))
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                Text(scenario.getDescription(for: nativeLanguage))
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
                             }
-                            .padding(.top, 20)
+                            .padding(.vertical, 20)
+                            .padding(.bottom, 8)
+
+                            // 대화 기록
+                            ForEach(Array(conversationHistory.enumerated()), id: \.element.id) { index, node in
+                                MessageBubble(
+                                    node: node,
+                                    displayMode: displayMode,
+                                    nativeLanguage: nativeLanguage,
+                                    learningLanguage: learningLanguage,
+                                    localizedText: localizedText,
+                                    onTap: {
+                                        speak(text: node.text)
+                                    }
+                                )
+                                .id(node.id)
+                                .padding(.bottom, 12)
+                            }
+
+                            // 대화 종료 메시지
+                            if isConversationEnded {
+                                VStack(spacing: 12) {
+                                    Text(localizedText.conversationComplete)
+                                        .font(.headline)
+
+                                    Button(action: resetConversation) {
+                                        Label(localizedText.practiceAgain, systemImage: "arrow.counterclockwise")
+                                            .padding()
+                                            .background(Color.blue)
+                                            .foregroundColor(.white)
+                                            .cornerRadius(10)
+                                    }
+                                }
+                                .padding(.top, 20)
+                            }
                         }
+                        .padding(.vertical, 8)
                     }
-                    .padding(.vertical, 8)
-                }
-                .background(Color(.systemGroupedBackground))
-                .onChange(of: conversationHistory.count) { _ in
-                    if let lastNode = conversationHistory.last {
-                        withAnimation {
-                            proxy.scrollTo(lastNode.id, anchor: .bottom)
+                    .onChange(of: conversationHistory.count) { _ in
+                        if let lastNode = conversationHistory.last {
+                            withAnimation {
+                                proxy.scrollTo(lastNode.id, anchor: .bottom)
+                            }
                         }
                     }
                 }
@@ -197,6 +206,17 @@ struct ConversationView: View {
                 scenario: scenario,
                 nativeLanguage: nativeLanguage,
                 learningLanguage: learningLanguage
+            )
+        }
+        .sheet(isPresented: $showBranchSelector) {
+            BranchSelectorSheet(
+                branches: availableBranches,
+                nativeLanguage: nativeLanguage,
+                displayMode: displayMode,
+                localizedText: localizedText,
+                onSelect: { selected in
+                    proceedWithBranch(selected)
+                }
             )
         }
     }
@@ -364,23 +384,17 @@ struct ConversationView: View {
             conversationHistory.append(userStart)
             print("📱 [CONVERSATION] 사용자 시작 문장 추가: \(userStart.text)")
 
-            // AI 응답
+            // AI 응답 - 분기가 여러 개면 선택 UI 표시
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 print("📱 [CONVERSATION] AI 응답 준비 중...")
-                if let randomResponse = scenario.conversationTree.randomElement() {
-                    print("📱 [CONVERSATION] AI 응답 추가: \(randomResponse.text)")
-                    conversationHistory.append(randomResponse)
-                    print("📱 [CONVERSATION] speak() 함수 호출 시도")
-                    speak(text: randomResponse.text)
-                    currentResponses = randomResponse.responses
 
-                    if let firstUserResponse = randomResponse.responses?.first {
-                        currentUserPhrase = firstUserResponse
-                        print("📱 [CONVERSATION] 다음 사용자 문장 설정: \(firstUserResponse.text)")
-                    } else {
-                        isConversationEnded = true
-                        print("📱 [CONVERSATION] 대화 종료됨")
-                    }
+                // 분기가 여러 개면 선택 UI 표시
+                if scenario.conversationTree.count > 1 {
+                    print("📱 [CONVERSATION] 분기 감지: \(scenario.conversationTree.count)개")
+                    availableBranches = scenario.conversationTree
+                    showBranchSelector = true
+                } else if let randomResponse = scenario.conversationTree.first {
+                    proceedWithResponse(randomResponse)
                 }
                 recognitionStatus = .idle
                 recognizedText = ""
@@ -390,22 +404,15 @@ struct ConversationView: View {
             print("📱 [CONVERSATION] 사용자 응답 추가: \(userPhrase.text)")
             conversationHistory.append(userPhrase)
 
-            // 다음 AI 응답
-            if let nextResponses = userPhrase.responses, let nextNative = nextResponses.first {
+            // 다음 AI 응답 - 분기가 여러 개면 선택 UI 표시
+            if let nextResponses = userPhrase.responses, !nextResponses.isEmpty {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    print("📱 [CONVERSATION] 다음 AI 응답 추가: \(nextNative.text)")
-                    conversationHistory.append(nextNative)
-                    print("📱 [CONVERSATION] speak() 함수 호출 시도")
-                    speak(text: nextNative.text)
-                    currentResponses = nextNative.responses
-
-                    if let nextUserPhrase = nextNative.responses?.first {
-                        currentUserPhrase = nextUserPhrase
-                        print("📱 [CONVERSATION] 다음 사용자 문장 설정: \(nextUserPhrase.text)")
-                    } else {
-                        isConversationEnded = true
-                        currentUserPhrase = nil
-                        print("📱 [CONVERSATION] 대화 종료됨")
+                    if nextResponses.count > 1 {
+                        print("📱 [CONVERSATION] 분기 감지: \(nextResponses.count)개")
+                        availableBranches = nextResponses
+                        showBranchSelector = true
+                    } else if let nextNative = nextResponses.first {
+                        proceedWithResponse(nextNative)
                     }
                     recognitionStatus = .idle
                     recognizedText = ""
@@ -419,6 +426,29 @@ struct ConversationView: View {
             }
         }
         print("📱 [CONVERSATION] === proceedConversation 완료 ===\n")
+    }
+
+    private func proceedWithResponse(_ response: ConversationNode) {
+        print("📱 [CONVERSATION] AI 응답 추가: \(response.text)")
+        conversationHistory.append(response)
+        print("📱 [CONVERSATION] speak() 함수 호출 시도")
+        speak(text: response.text)
+        currentResponses = response.responses
+
+        if let nextUserPhrase = response.responses?.first {
+            currentUserPhrase = nextUserPhrase
+            print("📱 [CONVERSATION] 다음 사용자 문장 설정: \(nextUserPhrase.text)")
+        } else {
+            isConversationEnded = true
+            currentUserPhrase = nil
+            print("📱 [CONVERSATION] 대화 종료됨")
+        }
+    }
+
+    private func proceedWithBranch(_ branch: ConversationNode) {
+        print("📱 [CONVERSATION] 선택된 분기: \(branch.text)")
+        showBranchSelector = false
+        proceedWithResponse(branch)
     }
 
     private func saveConversationHistory() {
@@ -632,6 +662,119 @@ struct VoiceInputSection: View {
                 .foregroundColor(.red)
         default:
             EmptyView()
+        }
+    }
+}
+
+// MARK: - 분기 선택 Sheet
+struct BranchSelectorSheet: View {
+    let branches: [ConversationNode]
+    let nativeLanguage: Language
+    let displayMode: LanguageDisplayMode
+    let localizedText: LocalizedText
+    let onSelect: (ConversationNode) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(spacing: 16) {
+                    Text(selectBranchMessage)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding()
+
+                    ForEach(Array(branches.enumerated()), id: \.element.id) { index, branch in
+                        Button(action: {
+                            onSelect(branch)
+                            dismiss()
+                        }) {
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    Image(systemName: "arrow.triangle.branch")
+                                        .foregroundColor(.orange)
+                                    Text("\(optionLabel) \(index + 1)")
+                                        .font(.caption)
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(.orange)
+                                    Spacer()
+                                }
+
+                                // 학습 언어 텍스트
+                                if displayMode == .learning || displayMode == .both {
+                                    Text(branch.text)
+                                        .font(.body)
+                                        .foregroundColor(.primary)
+                                        .multilineTextAlignment(.leading)
+                                }
+
+                                // 모국어 번역
+                                if (displayMode == .native || displayMode == .both),
+                                   let translation = branch.translation(for: nativeLanguage) {
+                                    Text(translation)
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                        .multilineTextAlignment(.leading)
+                                }
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Color(.systemGray6))
+                            .cornerRadius(12)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                }
+                .padding()
+            }
+            .navigationTitle(selectBranchTitle)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+        }
+    }
+
+    private var selectBranchTitle: String {
+        switch nativeLanguage {
+        case .korean: return "경로 선택"
+        case .english: return "Select Path"
+        case .japanese: return "パスを選択"
+        case .chinese: return "选择路径"
+        case .spanish: return "Seleccionar ruta"
+        case .indonesian: return "Pilih Jalur"
+        default: return "Select Path"
+        }
+    }
+
+    private var selectBranchMessage: String {
+        switch nativeLanguage {
+        case .korean: return "대화를 계속할 경로를 선택하세요"
+        case .english: return "Select a path to continue the conversation"
+        case .japanese: return "会話を続けるパスを選択してください"
+        case .chinese: return "选择一条路径继续对话"
+        case .spanish: return "Selecciona una ruta para continuar la conversación"
+        case .indonesian: return "Pilih jalur untuk melanjutkan percakapan"
+        default: return "Select a path to continue the conversation"
+        }
+    }
+
+    private var optionLabel: String {
+        switch nativeLanguage {
+        case .korean: return "경로"
+        case .english: return "Path"
+        case .japanese: return "パス"
+        case .chinese: return "路径"
+        case .spanish: return "Ruta"
+        case .indonesian: return "Jalur"
+        default: return "Path"
         }
     }
 }

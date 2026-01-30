@@ -64,87 +64,56 @@ struct CustomScenario: Identifiable, Codable {
     }
 
     private func buildConversationTree() -> [ConversationNode] {
-        guard conversationTurns.count > 0 else { return [] }
+        guard !conversationTurns.isEmpty else { return [] }
 
-        var nodes: [ConversationNode] = []
-        var index = 0
+        var startIndex = 0
 
         // 첫 번째 턴이 사용자 발화면 건너뜀 (시작 문장으로 사용됨)
         if conversationTurns[0].speaker == .user {
-            index = 1
+            startIndex = 1
         }
 
-        // 나머지 턴들을 노드로 변환
-        while index < conversationTurns.count {
-            let turn = conversationTurns[index]
-
-            // 랜덤으로 옵션 선택
-            let selectedOption = turn.randomOption()
-
-            var translations: [Language: String] = [:]
-            translations[nativeLanguage] = selectedOption.nativeText
-
-            var responses: [ConversationNode]? = nil
-
-            // 다음 턴이 있으면 responses로 추가
-            if index + 1 < conversationTurns.count {
-                let nextTurn = conversationTurns[index + 1]
-                let nextSelectedOption = nextTurn.randomOption()
-                var nextTranslations: [Language: String] = [:]
-                nextTranslations[nativeLanguage] = nextSelectedOption.nativeText
-
-                var nextResponses: [ConversationNode]? = nil
-
-                // 그 다음 턴이 있으면 계속 연결
-                if index + 2 < conversationTurns.count {
-                    nextResponses = buildRemainingNodes(from: index + 2)
-                }
-
-                responses = [
-                    ConversationNode(
-                        id: "\(id)-turn\(index + 1)",
-                        speaker: nextTurn.speaker == .user ? .user : .native,
-                        text: nextSelectedOption.learningText,
-                        translations: nextTranslations,
-                        responses: nextResponses
-                    )
-                ]
-            }
-
-            nodes.append(
-                ConversationNode(
-                    id: "\(id)-turn\(index)",
-                    speaker: turn.speaker == .user ? .user : .native,
-                    text: selectedOption.learningText,
-                    translations: translations,
-                    responses: responses
-                )
-            )
-
-            break  // 첫 번째 노드만 생성하고 나머지는 responses로 연결됨
-        }
-
-        return nodes
+        return buildNodes(from: Array(conversationTurns.dropFirst(startIndex)))
     }
 
-    private func buildRemainingNodes(from startIndex: Int) -> [ConversationNode] {
-        guard startIndex < conversationTurns.count else { return [] }
+    private func buildNodes(from turns: [ConversationTurn]) -> [ConversationNode] {
+        guard let firstTurn = turns.first else { return [] }
 
-        let turn = conversationTurns[startIndex]
-        let selectedOption = turn.randomOption()
-        var translations: [Language: String] = [:]
-        translations[nativeLanguage] = selectedOption.nativeText
+        // 분기가 있는 경우: 각 분기별로 별도 노드 생성
+        if let branches = firstTurn.branches, !branches.isEmpty {
+            return branches.map { branch in
+                let optionIndex = min(branch.optionIndex, firstTurn.textOptions.count - 1)
+                let option = firstTurn.textOptions[max(0, optionIndex)]
 
-        var responses: [ConversationNode]? = nil
-        if startIndex + 1 < conversationTurns.count {
-            responses = buildRemainingNodes(from: startIndex + 1)
+                var translations: [Language: String] = [:]
+                translations[nativeLanguage] = option.nativeText
+
+                // 분기의 childTurns를 재귀적으로 변환
+                let childNodes = buildNodes(from: branch.childTurns)
+
+                return ConversationNode(
+                    id: "\(id)-\(firstTurn.id)-branch\(branch.id)",
+                    speaker: firstTurn.speaker == .user ? .user : .native,
+                    text: option.learningText,
+                    translations: translations,
+                    responses: childNodes.isEmpty ? nil : childNodes
+                )
+            }
         }
+
+        // 분기 없음: 선형 진행
+        let option = firstTurn.textOptions.first ?? ConversationTurn.TextOption(nativeText: "", learningText: "")
+        var translations: [Language: String] = [:]
+        translations[nativeLanguage] = option.nativeText
+
+        let remaining = Array(turns.dropFirst())
+        let responses = remaining.isEmpty ? nil : buildNodes(from: remaining)
 
         return [
             ConversationNode(
-                id: "\(id)-turn\(startIndex)",
-                speaker: turn.speaker == .user ? .user : .native,
-                text: selectedOption.learningText,
+                id: "\(id)-\(firstTurn.id)",
+                speaker: firstTurn.speaker == .user ? .user : .native,
+                text: option.learningText,
                 translations: translations,
                 responses: responses
             )
@@ -156,6 +125,7 @@ struct ConversationTurn: Identifiable, Codable {
     let id: String
     let speaker: TurnSpeaker
     let textOptions: [TextOption]  // 여러 옵션 지원
+    let branches: [BranchTurn]?    // 분기 경로들
 
     enum TurnSpeaker: String, Codable {
         case user = "user"
@@ -167,6 +137,20 @@ struct ConversationTurn: Identifiable, Codable {
         let learningText: String
     }
 
+    struct BranchTurn: Codable {
+        let id: String
+        let label: String
+        let optionIndex: Int
+        let childTurns: [ConversationTurn]
+
+        init(id: String = UUID().uuidString, label: String, optionIndex: Int, childTurns: [ConversationTurn]) {
+            self.id = id
+            self.label = label
+            self.optionIndex = optionIndex
+            self.childTurns = childTurns
+        }
+    }
+
     init(id: String = UUID().uuidString,
          speaker: TurnSpeaker,
          nativeLanguageText: String,
@@ -175,14 +159,17 @@ struct ConversationTurn: Identifiable, Codable {
         self.speaker = speaker
         // 기존 단일 텍스트 지원 (하위 호환성)
         self.textOptions = [TextOption(nativeText: nativeLanguageText, learningText: learningLanguageText)]
+        self.branches = nil
     }
 
     init(id: String = UUID().uuidString,
          speaker: TurnSpeaker,
-         textOptions: [TextOption]) {
+         textOptions: [TextOption],
+         branches: [BranchTurn]? = nil) {
         self.id = id
         self.speaker = speaker
         self.textOptions = textOptions.isEmpty ? [TextOption(nativeText: "", learningText: "")] : textOptions
+        self.branches = branches
     }
 
     // 기존 코드 호환성을 위한 computed properties
@@ -197,6 +184,14 @@ struct ConversationTurn: Identifiable, Codable {
     // 랜덤으로 옵션 선택
     func randomOption() -> TextOption {
         textOptions.randomElement() ?? TextOption(nativeText: "", learningText: "")
+    }
+
+    // 분기가 있는지 확인
+    var hasBranches: Bool {
+        if let branches = branches, !branches.isEmpty {
+            return true
+        }
+        return false
     }
 }
 
