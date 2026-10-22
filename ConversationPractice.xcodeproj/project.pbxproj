@@ -190,6 +190,11 @@
 				da,
 				el,
 				fi,
+				nb,
+				nl,
+				pl,
+				sv,
+				tr,
 			);
 			mainGroup = A100000D232323230000001;
 			productRefGroup = A100000F232323230000001 /* Products */;
