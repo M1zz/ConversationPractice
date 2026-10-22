@@ -195,6 +195,10 @@
 				pl,
 				sv,
 				tr,
+				es,
+				id,
+				ja,
+				"zh-Hans",
 			);
 			mainGroup = A100000D232323230000001;
 			productRefGroup = A100000F232323230000001 /* Products */;
